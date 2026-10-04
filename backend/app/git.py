@@ -56,6 +56,17 @@ def ignore_locally(repo: str, pattern: str) -> None:
             f.write(pattern + "\n")
 
 
+def list_worktrees(root: str) -> list[dict[str, str]]:
+    """Linked worktrees on a branch (the main checkout, bare and detached entries are skipped)."""
+    out = git(root, "worktree", "list", "--porcelain")
+    entries = [dict(line.split(" ", 1) for line in block.splitlines() if " " in line) for block in out.split("\n\n")]
+    return [
+        {"path": e["worktree"], "branch": e["branch"].removeprefix("refs/heads/")}
+        for e in entries[1:]
+        if "branch" in e
+    ]
+
+
 def remove_worktree(root: str, path: str) -> None:
     git(root, "worktree", "remove", path)
 

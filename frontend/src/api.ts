@@ -18,6 +18,9 @@ export type Worktree = {
   status: Status;
   /** An agent finished its turn and the worktree hasn't been opened since. */
   done: boolean;
+  /** Exists in git but has no dima2 record yet; `path` is set only for these. */
+  unmanaged?: boolean;
+  path?: string;
 };
 
 export type FileStatus = "A" | "M" | "D";
@@ -87,6 +90,7 @@ export const api = {
   worktree: (id: number) => request<WorktreeDetail>("GET", `/api/worktrees/${id}`),
   addWorktree: (w: { project_id: number; branch: string; base_ref: string }) =>
     request<{ id: number }>("POST", "/api/worktrees", w),
+  adoptWorktree: (body: { project_id: number; branch: string; path: string }) => request<{ id: number }>("POST", "/api/worktrees/adopt", body),
   archiveWorktree: (id: number) => request<void>("POST", `/api/worktrees/${id}/archive`),
   diff: (id: number, path: string) => request<{ diff: string }>("GET", `/api/worktrees/${id}/diff?${q({ path })}`),
   content: (id: number, path: string) => fetch(contentUrl(id, path)).then((r) => r.text()),

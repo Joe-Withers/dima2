@@ -85,6 +85,10 @@ def resize(fd: int, cols: int, rows: int) -> None:
 async def attach(ws: WebSocket, id: int):
     """Bridge the browser to `tmux attach`. Binary frames are keystrokes; text frames are JSON control messages."""
     await ws.accept()
+    try:
+        tmux.configure(id)
+    except RuntimeError:
+        pass  # session is gone; attach below reports it
     master, slave = pty.openpty()
     proc = await asyncio.create_subprocess_exec(
         "tmux", "attach", "-t", tmux.name(id),

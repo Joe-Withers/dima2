@@ -18,13 +18,18 @@ export default function Worktrees() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["worktrees"] }),
     onError: (e) => alert(e.message),
   });
+  const adopt = useMutation({
+    mutationFn: api.adoptWorktree,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["worktrees"] }),
+    onError: (e) => alert(e.message),
+  });
   const [project, setProject] = useState("");
   const [search, setSearch] = useState("");
   const [showArchived, setShowArchived] = useState(false);
   const [creating, setCreating] = useState(false);
 
   const all = worktrees.data ?? [];
-  const active = all.filter((w) => !w.archived_at);
+  const active = all.filter((w) => !w.archived_at && !w.unmanaged);
   const projectNames = [...new Set(all.map((w) => w.project))].sort();
   const visible = all.filter(
     (w) =>
@@ -62,14 +67,14 @@ export default function Worktrees() {
           </thead>
           <tbody>
             {visible.map((w) => (
-              <tr key={w.id} className={w.archived_at ? "archived" : undefined}>
+              <tr key={w.unmanaged ? `u:${w.path}` : w.id} className={w.archived_at || w.unmanaged ? "archived" : undefined}>
                 <td><span className="swatch" style={{ background: projectColor(w.project) }} />{w.project}</td>
                 <td className="mono">
-                  {w.archived_at ? <>{w.branch}<span className="muted"> · archived</span></> : <Link className="branch" to={`/worktrees/${w.id}`}>{w.branch}</Link>}
+                  {w.unmanaged ? <>{w.branch}<span className="muted"> · not tracked</span></> : w.archived_at ? <>{w.branch}<span className="muted"> · archived</span></> : <Link className="branch" to={`/worktrees/${w.id}`}>{w.branch}</Link>}
                   {w.done && <span className="badge">done</span>}
                 </td>
                 <td>
-                  {!w.archived_at && (
+                  {!w.archived_at && !w.unmanaged && (
                     <>
                       <span className={`pill s-${w.status}`}><span className="d" />{w.status.replace("_", " ")}</span>
                       <span className="faint small"> {w.sessions} session{w.sessions === 1 ? "" : "s"}</span>
@@ -77,13 +82,15 @@ export default function Worktrees() {
                   )}
                 </td>
                 <td className="mono">
-                  {w.files} files
-                  {w.md_files > 0 && <span className="accent"> · {w.md_files} md</span>}
+                  {!w.unmanaged && <>{w.files} files{w.md_files > 0 && <span className="accent"> · {w.md_files} md</span>}</>}
                 </td>
-                <td className="mono muted">↑{w.ahead} ↓{w.behind}</td>
-                <td className="muted">{timeAgo(w.last_activity)}</td>
+                <td className="mono muted">{!w.unmanaged && <>↑{w.ahead} ↓{w.behind}</>}</td>
+                <td className="muted">{!w.unmanaged && timeAgo(w.last_activity)}</td>
                 <td style={{ textAlign: "right" }}>
-                  {!w.archived_at && (
+                  {w.unmanaged && (
+                    <button className="iconbtn plus" aria-label={`Track ${w.branch}`} title="Track in dima2" onClick={() => adopt.mutate({ project_id: w.project_id, branch: w.branch, path: w.path! })}>+</button>
+                  )}
+                  {!w.archived_at && !w.unmanaged && (
                     <button className="iconbtn" aria-label={`Archive ${w.branch}`} title="Archive" onClick={() => confirm(`Archive ${w.branch}? This removes its folder.`) && archive.mutate(w.id)}>
                       <Archive />
                     </button>

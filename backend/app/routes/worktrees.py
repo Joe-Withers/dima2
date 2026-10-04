@@ -71,7 +71,52 @@ def list_worktrees():
             item["status"] = session_status(sessions)
             item["done"] = item["status"] != "needs_input" and any(s["alive"] and s["agent_state"] == "done" for s in sessions)
         out.append(item)
-    return out
+    return out + unmanaged(rows)
+
+
+def unmanaged(rows: list[sqlite3.Row]) -> list[dict]:
+    """Worktrees git knows about that dima2 has no active record for."""
+    known = {str(Path(r["path"]).resolve()) for r in rows if r["archived_at"] is None}
+    with db.connect() as conn:
+        projects = conn.execute("SELECT id, name, root_path FROM projects").fetchall()
+    found = []
+    for p in projects:
+        try:
+            listed = git.list_worktrees(p["root_path"])
+        except (git.GitError, FileNotFoundError, NotADirectoryError):
+            continue
+        for w in listed:
+            if str(Path(w["path"]).resolve()) in known:
+                continue
+            found.append({
+                "id": 0, "project_id": p["id"], "project": p["name"], "branch": w["branch"], "path": w["path"],
+                "base_ref": "", "created_at": 0, "archived_at": None, "files": 0, "md_files": 0, "ahead": 0, "behind": 0,
+                "last_activity": 0, "sessions": 0, "status": "idle", "done": False, "unmanaged": True,
+            })
+    return found
+
+
+class AdoptIn(BaseModel):
+    project_id: int
+    branch: str
+    path: str
+
+
+@router.post("/worktrees/adopt", status_code=201)
+def adopt_worktree(body: AdoptIn):
+    """Register a worktree that already exists in git."""
+    with db.connect() as conn:
+        root = db.get(conn, "projects", body.project_id)["root_path"]
+        if not any(w["path"] == body.path and w["branch"] == body.branch for w in git.list_worktrees(root)):
+            raise HTTPException(404, "not a worktree of this project")
+        base = git.default_base(root)
+        conn.execute(
+            "INSERT INTO worktrees (project_id, branch, path, base_ref) VALUES (?, ?, ?, ?) "
+            "ON CONFLICT (project_id, branch) DO UPDATE SET path = excluded.path, archived_at = NULL",
+            (body.project_id, body.branch, body.path, base),
+        )
+        row = conn.execute("SELECT id FROM worktrees WHERE project_id = ? AND branch = ?", (body.project_id, body.branch)).fetchone()
+        return {"id": row["id"]}
 
 
 @router.post("/worktrees", status_code=201)

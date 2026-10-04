@@ -20,7 +20,16 @@ def create(session_id: int, cwd: str, env: dict[str, str]) -> None:
     env_args = [arg for key, value in env.items() for arg in ("-e", f"{key}={value}")]
     tmux("new-session", "-d", "-s", name(session_id), "-c", cwd, "-x", "200", "-y", "50", *env_args)
     tmux("set-option", "-t", name(session_id), "remain-on-exit", "on")
-    tmux("set-option", "-t", name(session_id), "status", "off")  # the app has its own tab bar
+    configure(session_id)
+
+
+def configure(session_id: int) -> None:
+    """Per-session options; also reapplied on attach so sessions made before an option existed pick it up."""
+    target = name(session_id)
+    tmux("set-option", "-t", target, "status", "off")  # the app has its own tab bar
+    # tmux draws on the alternate screen, so the browser has no scrollback of its own: let the wheel scroll tmux's history.
+    tmux("set-option", "-t", target, "mouse", "on")
+    tmux("set-option", "-t", target, "history-limit", "50000")
 
 
 def kill(session_id: int) -> None:

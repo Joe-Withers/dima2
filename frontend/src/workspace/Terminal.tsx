@@ -25,6 +25,7 @@ export default function Terminal({ sessionId }: { sessionId: number }) {
       if (disposed) return;
       term.options.fontFamily = '"IBM Plex Mono", monospace';
       term.clearTextureAtlas();
+      sent = "";
       sendSize();
     });
     // Ctrl+Up/Down belong to the app's layout shortcuts, not the pty.
@@ -32,20 +33,29 @@ export default function Terminal({ sessionId }: { sessionId: number }) {
 
     const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/sessions/${sessionId}/ws`);
     ws.binaryType = "arraybuffer";
+    // Resize only once the size settles and actually changed: resizing on every frame of a drag, mid-stream,
+    // leaves tmux redrawing for sizes the terminal has already left, which garbles the screen.
+    let sent = "";
     const sendSize = () => {
       if (el.clientHeight < MIN_HEIGHT || ws.readyState !== WebSocket.OPEN) return;
+      const size = fit.proposeDimensions();
+      if (!size || `${size.cols}x${size.rows}` === sent) return;
+      sent = `${size.cols}x${size.rows}`;
       fit.fit();
       ws.send(JSON.stringify({ resize: [term.cols, term.rows] }));
     };
+    let timer: number | undefined;
+    const sendSizeSoon = () => (window.clearTimeout(timer), (timer = window.setTimeout(sendSize, 120)));
     ws.onopen = () => (sendSize(), term.focus());
     ws.onmessage = (e) => term.write(new Uint8Array(e.data));
     ws.onclose = () => term.write("\r\n\x1b[90m[disconnected]\x1b[0m\r\n");
     term.onData((data) => ws.readyState === WebSocket.OPEN && ws.send(new TextEncoder().encode(data)));
 
-    const observer = new ResizeObserver(sendSize);
+    const observer = new ResizeObserver(sendSizeSoon);
     observer.observe(el);
     return () => {
       disposed = true;
+      window.clearTimeout(timer);
       observer.disconnect();
       ws.close();
       term.dispose();
