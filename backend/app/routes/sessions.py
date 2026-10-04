@@ -91,7 +91,7 @@ async def attach(ws: WebSocket, id: int):
         pass  # session is gone; attach below reports it
     master, slave = pty.openpty()
     proc = await asyncio.create_subprocess_exec(
-        "tmux", "attach", "-t", tmux.name(id),
+        "tmux", "-u", "attach", "-t", tmux.name(id),
         stdin=slave, stdout=slave, stderr=slave, start_new_session=True,
         env={**os.environ, "TERM": "xterm-256color"},
     )

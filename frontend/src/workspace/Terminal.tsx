@@ -1,4 +1,5 @@
 import { FitAddon } from "@xterm/addon-fit";
+import { Unicode11Addon } from "@xterm/addon-unicode11";
 import { Terminal as XTerm } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
 import { useEffect, useRef } from "react";
@@ -14,10 +15,15 @@ export default function Terminal({ sessionId }: { sessionId: number }) {
       fontFamily: '"IBM Plex Mono", monospace',
       fontSize: 13,
       cursorBlink: true,
+      allowProposedApi: true, // needed to select the unicode version below
       theme: { background: "#0B0C0E", foreground: "#D6D3CC" },
     });
     const fit = new FitAddon();
     term.loadAddon(fit);
+    // tmux and the agent's UI lay out text with modern Unicode widths (symbols, emoji, box drawing); xterm's older
+    // default disagrees about some characters, so the cursor drifts and lines overwrite each other.
+    term.loadAddon(new Unicode11Addon());
+    term.unicode.activeVersion = "11";
     term.open(el);
     // The web font loads late; xterm measures cell width at open, so re-measure once it's in or columns drift.
     let disposed = false;
@@ -42,6 +48,7 @@ export default function Terminal({ sessionId }: { sessionId: number }) {
       if (!size || `${size.cols}x${size.rows}` === sent) return;
       sent = `${size.cols}x${size.rows}`;
       fit.fit();
+      term.refresh(0, term.rows - 1);
       ws.send(JSON.stringify({ resize: [term.cols, term.rows] }));
     };
     let timer: number | undefined;
