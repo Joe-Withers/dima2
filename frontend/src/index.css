@@ -163,7 +163,7 @@ a { color: #8dbbee; }
 .tab-close:hover { background: #22262b; color: var(--text); }
 .layout-controls { display: flex; align-items: center; gap: 4px; padding-right: 8px; }
 .layout-controls .kbd + .iconbtn { margin-left: 6px; }
-.xterm-host { flex: 1; min-height: 0; padding: 8px 12px; }
+.xterm-host { flex: 1; min-height: 0; padding: 8px 12px; overflow: hidden; }
 
 /* views */
 .views { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }

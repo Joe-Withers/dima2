@@ -19,6 +19,14 @@ export default function Terminal({ sessionId }: { sessionId: number }) {
     const fit = new FitAddon();
     term.loadAddon(fit);
     term.open(el);
+    // The web font loads late; xterm measures cell width at open, so re-measure once it's in or columns drift.
+    let disposed = false;
+    document.fonts.load('13px "IBM Plex Mono"').then(() => {
+      if (disposed) return;
+      term.options.fontFamily = '"IBM Plex Mono", monospace';
+      term.clearTextureAtlas();
+      sendSize();
+    });
     // Ctrl+Up/Down belong to the app's layout shortcuts, not the pty.
     term.attachCustomKeyEventHandler((e) => !(e.ctrlKey && (e.key === "ArrowUp" || e.key === "ArrowDown")));
 
@@ -37,11 +45,17 @@ export default function Terminal({ sessionId }: { sessionId: number }) {
     const observer = new ResizeObserver(sendSize);
     observer.observe(el);
     return () => {
+      disposed = true;
       observer.disconnect();
       ws.close();
       term.dispose();
     };
   }, [sessionId]);
 
-  return <div ref={container} className="xterm-host" />;
+  // FitAddon sizes to the host's content box but ignores the host's own padding, so pad an outer wrapper.
+  return (
+    <div className="xterm-host">
+      <div ref={container} style={{ height: "100%" }} />
+    </div>
+  );
 }
