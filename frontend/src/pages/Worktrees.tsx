@@ -6,6 +6,7 @@ import NewWorktreeDialog from "../NewWorktreeDialog";
 import Page from "../Page";
 import { projectColor } from "../projectColor";
 import { timeAgo } from "../timeAgo";
+import { Archive } from "../workspace/icons";
 import { useAttentionCount, useWorktrees } from "../useWorktrees";
 
 export default function Worktrees() {
@@ -52,7 +53,7 @@ export default function Worktrees() {
           Show archived
         </label>
         <span className="grow" />
-        <button className="btn primary" onClick={() => setCreating(true)}>+ New worktree</button>
+        <button className="iconbtn plus" aria-label="New worktree" title="New worktree" onClick={() => setCreating(true)}>+</button>
       </div>
       <div className="card">
         <table>
@@ -81,10 +82,10 @@ export default function Worktrees() {
                 </td>
                 <td className="mono muted">↑{w.ahead} ↓{w.behind}</td>
                 <td className="muted">{timeAgo(w.last_activity)}</td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {!w.archived_at && (
-                    <button className="btn" onClick={() => confirm(`Archive ${w.branch}? This removes its folder.`) && archive.mutate(w.id)}>
-                      Archive
+                    <button className="iconbtn" aria-label={`Archive ${w.branch}`} title="Archive" onClick={() => confirm(`Archive ${w.branch}? This removes its folder.`) && archive.mutate(w.id)}>
+                      <Archive />
                     </button>
                   )}
                 </td>

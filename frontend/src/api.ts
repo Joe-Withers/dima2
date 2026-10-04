@@ -57,8 +57,8 @@ export type Directory = { path: string; parent: string | null; is_repo: boolean;
 
 export type Refs = { default: string; refs: string[] };
 
-export type ViewEntry = { group: string; name: string; path: string };
-export type ViewFile = { path: string; frontmatter: Record<string, string>; body: string };
+export type ViewEntry = { group: string; name: string; path: string; scope: "project" | "global" };
+export type ViewFile = { path: string; scope: string; frontmatter: Record<string, string>; body: string };
 
 async function request<T>(method: string, url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -81,7 +81,7 @@ export const api = {
   directory: (path: string) => request<Directory>("GET", `/api/fs?${q({ path })}`),
   refs: (projectId: number) => request<Refs>("GET", `/api/projects/${projectId}/refs`),
   views: (projectId: number) => request<ViewEntry[]>("GET", `/api/projects/${projectId}/views`),
-  viewFile: (projectId: number, path: string) => request<ViewFile>("GET", `/api/projects/${projectId}/views/file?${q({ path })}`),
+  viewFile: (projectId: number, path: string, scope: string) => request<ViewFile>("GET", `/api/projects/${projectId}/views/file?${q({ path, scope })}`),
 
   worktrees: () => request<Worktree[]>("GET", "/api/worktrees"),
   worktree: (id: number) => request<WorktreeDetail>("GET", `/api/worktrees/${id}`),
