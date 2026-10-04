@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { api, FileStatus } from "../api";
+import { api, Comment, FileStatus } from "../api";
 import CommentRail from "./CommentRail";
 import MarkdownPreview from "./MarkdownPreview";
 import PanelHeader from "./PanelHeader";
+
+const NO_COMMENTS: Comment[] = []; // stable identity: a fresh [] each render would retrigger the preview's layout effect forever
 
 type Props = {
   worktreeId: number;
@@ -19,6 +21,7 @@ export default function ReviewPane({ worktreeId, path, status, target }: Props) 
   const source = useQuery({ queryKey: ["content", worktreeId, path], queryFn: () => api.content(worktreeId, path), refetchInterval: 3000 });
   const commentsKey = ["comments", worktreeId, path];
   const comments = useQuery({ queryKey: commentsKey, queryFn: () => api.comments(worktreeId, path) });
+  const commentList = comments.data ?? NO_COMMENTS;
   const refresh = () => qc.invalidateQueries({ queryKey: commentsKey });
 
   const add = useMutation({ mutationFn: (c: { block_id: string; quote: string; body: string }) => api.addComment(worktreeId, { path, ...c }), onSuccess: refresh });
@@ -40,13 +43,13 @@ export default function ReviewPane({ worktreeId, path, status, target }: Props) 
             worktreeId={worktreeId}
             path={path}
             source={source.data}
-            comments={comments.data ?? []}
+            comments={commentList}
             onAdd={add.mutate}
             onUnanchored={setUnanchored}
           />
         )}
         <CommentRail
-          comments={comments.data ?? []}
+          comments={commentList}
           unanchored={unanchored}
           target={target?.name ?? null}
           onDelete={remove.mutate}
