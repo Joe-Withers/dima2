@@ -4,8 +4,13 @@
   --text: #e7e4dd; --muted: #a0a4ab; --faint: #7c8188;
   --accent: #e8a33d; --accent-hover: #f0b354; --on-accent: #1a1205;
   --danger: #e89a8c;
+  color-scheme: dark;
 }
-* { box-sizing: border-box; }
+* { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: #3a4048 transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+*::-webkit-scrollbar-corner { background: transparent; }
+*::-webkit-scrollbar-thumb { background: #3a4048; border-radius: 5px; border: 2px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-thumb:hover { background: #4a5058; background-clip: content-box; }
 html, body, #root { height: 100%; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 "IBM Plex Sans", system-ui, sans-serif; }
 .mono, code { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; }
