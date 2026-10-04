@@ -5,20 +5,30 @@ import { api, Comment } from "../api";
 export type Scope = "file" | "all";
 
 const NONE: Comment[] = []; // stable identity: a fresh [] each render would retrigger the preview's layout effect forever
-const STORAGE = "dima2.commentScope";
+const SCOPE_KEY = "dima2.commentScope";
+const SHOW_SENT_KEY = "dima2.showSentComments";
 
-function storedScope(): Scope {
+function stored(key: string): string | null {
   try {
-    return localStorage.getItem(STORAGE) === "all" ? "all" : "file";
+    return localStorage.getItem(key);
   } catch {
-    return "file";
+    return null;
+  }
+}
+
+function remember(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* remembering the choice is a convenience only */
   }
 }
 
 /** The branch's comments, the ones on the open file, and the actions the comment rail needs. */
 export function useComments(worktreeId: number, path: string, target: { id: number } | null) {
   const qc = useQueryClient();
-  const [scope, setScopeState] = useState<Scope>(storedScope);
+  const [scope, setScopeState] = useState<Scope>(stored(SCOPE_KEY) === "all" ? "all" : "file");
+  const [showSent, setShowSentState] = useState(stored(SHOW_SENT_KEY) === "true");
   const key = ["comments", worktreeId];
   const query = useQuery({ queryKey: key, queryFn: () => api.comments(worktreeId) });
   const all = query.data ?? NONE;
@@ -35,12 +45,13 @@ export function useComments(worktreeId: number, path: string, target: { id: numb
 
   function setScope(next: Scope) {
     setScopeState(next);
-    try {
-      localStorage.setItem(STORAGE, next);
-    } catch {
-      /* remembering the choice is a convenience only */
-    }
+    remember(SCOPE_KEY, next);
   }
 
-  return { fileComments, railComments: scope === "all" ? all : fileComments, scope, setScope, add: add.mutate, remove: remove.mutate, send: send.mutate };
+  function setShowSent(next: boolean) {
+    setShowSentState(next);
+    remember(SHOW_SENT_KEY, String(next));
+  }
+
+  return { fileComments, railComments: scope === "all" ? all : fileComments, scope, setScope, showSent, setShowSent, add: add.mutate, remove: remove.mutate, send: send.mutate };
 }

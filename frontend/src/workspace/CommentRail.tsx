@@ -10,6 +10,9 @@ type Props = {
   path: string;
   scope: Scope;
   onScope: (scope: Scope) => void;
+  /** Sent comments are hidden from the list unless this is on. */
+  showSent: boolean;
+  onShowSent: (show: boolean) => void;
   /** Ids of comments on the open file whose anchor is gone. */
   unanchored: Set<number>;
   /** The active terminal tab, e.g. "session 2"; null when there is none. */
@@ -39,7 +42,7 @@ function Card({ c, n, unanchored, onDelete }: { c: Comment; n: number; unanchore
   );
 }
 
-export default function CommentRail({ comments, path, scope, onScope, unanchored, target, onDelete, onSend, onOpenFile }: Props) {
+export default function CommentRail({ comments, path, scope, onScope, showSent, onShowSent, unanchored, target, onDelete, onSend, onOpenFile }: Props) {
   const [extra, setExtra] = useState("");
   const unsent = comments.filter((c) => !c.sent_at).length;
   const canSend = target !== null && (unsent > 0 || extra.trim() !== "");
@@ -50,8 +53,9 @@ export default function CommentRail({ comments, path, scope, onScope, unanchored
     seen.set(c.file_path, n);
     return { c, n };
   });
-  const files = [...new Set(comments.map((c) => c.file_path))].sort((a, b) => Number(b === path) - Number(a === path) || a.localeCompare(b));
-  const inFile = (file: string) => numbered.filter(({ c }) => c.file_path === file);
+  const listed = numbered.filter(({ c }) => showSent || !c.sent_at);
+  const files = [...new Set(listed.map(({ c }) => c.file_path))].sort((a, b) => Number(b === path) - Number(a === path) || a.localeCompare(b));
+  const inFile = (file: string) => listed.filter(({ c }) => c.file_path === file);
 
   return (
     <aside className="rail" aria-label="Comments">
@@ -64,7 +68,15 @@ export default function CommentRail({ comments, path, scope, onScope, unanchored
           <button className={scope === "file" ? "on" : ""} aria-pressed={scope === "file"} onClick={() => onScope("file")}>This file</button>
           <button className={scope === "all" ? "on" : ""} aria-pressed={scope === "all"} onClick={() => onScope("all")}>All files</button>
         </div>
-        {comments.length === 0 && <p className="faint small">{scope === "all" ? "No comments on this branch yet." : "Select text to add a comment."}</p>}
+        <label className="muted small check">
+          <input type="checkbox" checked={showSent} onChange={(e) => onShowSent(e.target.checked)} />
+          Show sent
+        </label>
+        {listed.length === 0 && (
+          <p className="faint small">
+            {comments.length > 0 ? "All comments have been sent." : scope === "all" ? "No comments on this branch yet." : "Select text to add a comment."}
+          </p>
+        )}
         {scope === "file" ? (
           <>
             {inFile(path).filter(({ c }) => !unanchored.has(c.id)).map(({ c, n }) => <Card key={c.id} c={c} n={n} unanchored={false} onDelete={onDelete} />)}

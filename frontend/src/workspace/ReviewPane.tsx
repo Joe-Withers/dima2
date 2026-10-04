@@ -41,6 +41,8 @@ export default function ReviewPane({ worktreeId, path, status, target, onOpenFil
           path={path}
           scope={c.scope}
           onScope={c.setScope}
+          showSent={c.showSent}
+          onShowSent={c.setShowSent}
           unanchored={unanchored}
           target={target?.name ?? null}
           onDelete={c.remove}
