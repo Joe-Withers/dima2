@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS worktrees (
 CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY,
     worktree_id INTEGER NOT NULL REFERENCES worktrees(id) ON DELETE CASCADE,
-    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    agent_state TEXT  -- reported by agent hooks: running | needs_input | done
 );
 CREATE TABLE IF NOT EXISTS comments (
     id INTEGER PRIMARY KEY,
@@ -58,6 +59,8 @@ def connect() -> sqlite3.Connection:
 def init() -> None:
     with connect() as conn:
         conn.executescript(SCHEMA)
+        if "agent_state" not in {r["name"] for r in conn.execute("PRAGMA table_info(sessions)")}:
+            conn.execute("ALTER TABLE sessions ADD COLUMN agent_state TEXT")  # databases created before hooks existed
 
 
 def get(conn: sqlite3.Connection, table: str, id: int) -> sqlite3.Row:

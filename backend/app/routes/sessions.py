@@ -6,9 +6,10 @@ import pty
 import struct
 import termios
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel
 
-from .. import db, tmux
+from .. import db, hooks, tmux
 from .worktrees import active, load
 
 router = APIRouter()
@@ -19,16 +20,54 @@ def list_sessions(id: int):
     with db.connect() as conn:
         rows = conn.execute("SELECT * FROM sessions WHERE worktree_id = ? ORDER BY id", (id,)).fetchall()
     live = tmux.states()
-    return [{"id": r["id"], "command": "", "alive": False, "running": False, **live.get(r["id"], {})} for r in rows]
+    return [
+        {"id": r["id"], "command": "", "alive": False, "running": False, "agent_state": r["agent_state"], **live.get(r["id"], {})}
+        for r in rows
+    ]
 
 
 @router.post("/worktrees/{id}/sessions", status_code=201)
-def create_session(id: int):
+def create_session(id: int, request: Request):
+    host, port = request.scope["server"]
     with db.connect() as conn:
         w = active(load(conn, id))
+        try:
+            hooks.install(w["path"])
+        except ValueError:
+            raise HTTPException(409, f"{w['path']}/.claude/settings.local.json is not valid JSON")
         cur = conn.execute("INSERT INTO sessions (worktree_id) VALUES (?)", (id,))
-        tmux.create(cur.lastrowid, w["path"])
+        env = {"DIMA2_SESSION_ID": str(cur.lastrowid), "DIMA2_URL": f"http://{host}:{port}"}
+        tmux.create(cur.lastrowid, w["path"], env)
         return {"id": cur.lastrowid}
+
+
+class HookEvent(BaseModel):
+    """The part of a Claude Code hook payload we use."""
+
+    hook_event_name: str
+    notification_type: str | None = None
+
+
+STATE_FOR_EVENT = {"UserPromptSubmit": "running", "PostToolUse": "running", "PermissionRequest": "needs_input", "Stop": "done"}
+# Permission notifications arrive late, after PermissionRequest, so they could resurrect an answered prompt.
+NEEDS_INPUT_NOTIFICATIONS = {"elicitation_dialog", "agent_needs_input"}
+
+
+@router.post("/sessions/{id}/hook", status_code=204)
+def agent_hook(id: int, event: HookEvent):
+    state = STATE_FOR_EVENT.get(event.hook_event_name)
+    if event.hook_event_name == "Notification" and event.notification_type in NEEDS_INPUT_NOTIFICATIONS:
+        state = "needs_input"
+    if state:
+        with db.connect() as conn:
+            conn.execute("UPDATE sessions SET agent_state = ? WHERE id = ?", (state, id))
+
+
+@router.post("/worktrees/{id}/seen", status_code=204)
+def mark_seen(id: int):
+    """Opening a worktree acknowledges 'done'; 'needs_input' stays until the agent moves on."""
+    with db.connect() as conn:
+        conn.execute("UPDATE sessions SET agent_state = NULL WHERE worktree_id = ? AND agent_state = 'done'", (id,))
 
 
 @router.delete("/sessions/{id}", status_code=204)

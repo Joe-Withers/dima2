@@ -20,6 +20,15 @@ Development: run uvicorn with `--reload` and `npm run dev` in `frontend/` (http:
 State lives in `~/.dima2/dima2.db` (override with `DIMA2_DB`). Sessions are tmux sessions named `dima2-<id>`,
 so they survive restarts of the backend and the browser.
 
+## Agent status
+
+For Claude Code sessions, dima2 writes hooks into the worktree's `.claude/settings.local.json` (git-ignored
+via `.git/info/exclude`) when a session is started. They POST the agent's events to the backend using
+`DIMA2_SESSION_ID` / `DIMA2_URL`, which are set only inside dima2 sessions. This drives the **needs input**
+pill (a permission prompt or question is waiting), the **done** badge (the agent finished a turn and you
+haven't opened the worktree since), and the attention count in the browser tab title. Other agents still get
+running / idle / exited from terminal activity.
+
 ## Test
 
 ```sh

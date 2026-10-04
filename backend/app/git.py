@@ -42,14 +42,18 @@ def add_worktree(root: str, branch: str, base_ref: str) -> str:
     if path.exists():
         raise GitError(f"{path} already exists")
     git(root, "worktree", "add", str(path), "-b", branch, base_ref)
-    # keep .worktrees out of `git status` without touching the tracked .gitignore
-    exclude = Path(git(root, "rev-parse", "--git-path", "info/exclude"))
-    exclude = exclude if exclude.is_absolute() else Path(root) / exclude
-    exclude.parent.mkdir(exist_ok=True)
-    if ".worktrees/" not in (exclude.read_text() if exclude.exists() else ""):
-        with exclude.open("a") as f:
-            f.write(".worktrees/\n")
+    ignore_locally(root, ".worktrees/")
     return str(path)
+
+
+def ignore_locally(repo: str, pattern: str) -> None:
+    """Add a pattern to the repo's .git/info/exclude, so it stays out of `git status` without touching tracked files."""
+    exclude = Path(git(repo, "rev-parse", "--git-path", "info/exclude"))
+    exclude = exclude if exclude.is_absolute() else Path(repo) / exclude
+    exclude.parent.mkdir(exist_ok=True)
+    if pattern not in (exclude.read_text() if exclude.exists() else "").splitlines():
+        with exclude.open("a") as f:
+            f.write(pattern + "\n")
 
 
 def remove_worktree(root: str, path: str) -> None:

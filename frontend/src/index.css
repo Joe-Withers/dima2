@@ -190,3 +190,9 @@ a { color: #8dbbee; }
 .folder-list { max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; }
 .folder-list .item { justify-content: space-between; }
 .chip.repo { color: #7fd1a6; border-color: #2c5a45; }
+
+/* agent attention */
+.s-needs_input { color: var(--accent-hover); border-color: #5c4320; background: #2a2013; }
+.badge { display: inline-flex; align-items: center; height: 20px; margin-left: 10px; padding: 0 7px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 600 11px "IBM Plex Sans", sans-serif; }
+.attention { display: inline-flex; align-items: center; color: var(--accent-hover); font-size: 13px; font-weight: 500; }
+.attention .badge { margin: 0 8px 0 0; }

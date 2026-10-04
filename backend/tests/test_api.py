@@ -1,8 +1,11 @@
+import json
+import os
 import subprocess
 
 import pytest
 from fastapi.testclient import TestClient
 
+from app.hooks import COMMAND, EVENTS
 from app.main import app
 
 
@@ -143,3 +146,42 @@ def test_folder_listing(client, repo, tmp_path):
     assert all(not d["name"].startswith(".") for d in listing["dirs"])
     assert listing["parent"] == str(tmp_path.parent)
     assert client.get("/api/fs", params={"path": str(tmp_path / "nope")}).status_code == 400
+
+
+def post_hook(client, session, event, **extra):
+    r = client.post(f"/api/sessions/{session}/hook", json={"hook_event_name": event, **extra})
+    assert r.status_code == 204
+
+
+def test_agent_hooks_drive_status(client, worktree):
+    id, wt = worktree
+    (wt / ".claude").mkdir()
+    (wt / ".claude" / "settings.local.json").write_text('{"model": "haiku", "hooks": {"Stop": [{"hooks": [{"type": "command", "command": "mine"}]}]}}')
+    session = client.post(f"/api/worktrees/{id}/sessions").json()["id"]
+    client.post(f"/api/worktrees/{id}/sessions")  # a second install must not duplicate hooks
+
+    settings = json.loads((wt / ".claude" / "settings.local.json").read_text())
+    assert settings["model"] == "haiku"
+    assert set(settings["hooks"]) == set(EVENTS)
+    assert {e: len(g) for e, g in settings["hooks"].items()} == {**dict.fromkeys(EVENTS, 1), "Stop": 2}  # Stop keeps the user's own hook
+    assert ".claude" not in subprocess.run(["git", "status", "--porcelain"], cwd=wt, capture_output=True, text=True).stdout
+
+    def row():
+        return client.get("/api/worktrees").json()[0]
+
+    post_hook(client, session, "PermissionRequest")
+    assert row()["status"] == "needs_input"
+    post_hook(client, session, "PostToolUse")  # answered: the agent carried on
+    assert row()["status"] != "needs_input" and not row()["done"]
+    post_hook(client, session, "Notification", notification_type="idle_prompt")  # ignored
+    post_hook(client, session, "Stop")
+    assert row()["done"]
+    assert client.post(f"/api/worktrees/{id}/seen").status_code == 204
+    assert not row()["done"]
+    post_hook(client, session, "Notification", notification_type="elicitation_dialog")
+    assert row()["status"] == "needs_input"
+
+
+def test_hook_command_is_inert_outside_dima2(tmp_path):
+    result = subprocess.run(["bash", "-c", COMMAND], input="{}", capture_output=True, text=True, env={"PATH": os.environ["PATH"]})
+    assert result.returncode == 0

@@ -33,12 +33,15 @@ def active(w: sqlite3.Row) -> sqlite3.Row:
     return w
 
 
-def session_status(states: list[dict]) -> str:
-    if not states:
-        return "idle"
-    if any(s["running"] for s in states):
+def session_status(sessions: list[dict]) -> str:
+    """running / needs_input / idle / exited. Hooks only supply needs_input and done; "running" comes from
+    pane output so a missed Stop hook can't leave a worktree stuck on it."""
+    alive = [s for s in sessions if s["alive"]]
+    if any(s["agent_state"] == "needs_input" for s in alive):
+        return "needs_input"
+    if any(s["running"] for s in alive):
         return "running"
-    return "idle" if any(s["alive"] for s in states) else "exited"
+    return "exited" if sessions and not alive else "idle"
 
 
 @router.get("/worktrees")
@@ -47,13 +50,17 @@ def list_worktrees():
         rows = conn.execute(
             "SELECT w.*, p.name AS project FROM worktrees w JOIN projects p ON p.id = w.project_id ORDER BY w.created_at DESC"
         ).fetchall()
-        session_rows = conn.execute("SELECT id, worktree_id FROM sessions").fetchall()
+        session_rows = conn.execute("SELECT id, worktree_id, agent_state FROM sessions").fetchall()
     live = tmux.states()
     out = []
     for r in rows:
-        sessions = [live.get(s["id"], {"alive": False, "running": False, "activity": 0}) for s in session_rows if s["worktree_id"] == r["id"]]
+        sessions = [
+            {"alive": False, "running": False, "activity": 0, **live.get(s["id"], {}), "agent_state": s["agent_state"]}
+            for s in session_rows
+            if s["worktree_id"] == r["id"]
+        ]
         item = {k: r[k] for k in ("id", "project_id", "project", "branch", "base_ref", "created_at", "archived_at")}
-        item.update(files=0, md_files=0, ahead=0, behind=0, last_activity=r["created_at"], sessions=0, status="idle")
+        item.update(files=0, md_files=0, ahead=0, behind=0, last_activity=r["created_at"], sessions=0, status="idle", done=False)
         if r["archived_at"] is None:
             files = git.changed_files(r["path"], r["base_ref"])
             item["files"] = len(files)
@@ -62,6 +69,7 @@ def list_worktrees():
             item["last_activity"] = max([git.last_activity(r["path"]), *(s["activity"] for s in sessions)])
             item["sessions"] = len(sessions)
             item["status"] = session_status(sessions)
+            item["done"] = item["status"] != "needs_input" and any(s["alive"] and s["agent_state"] == "done" for s in sessions)
         out.append(item)
     return out
 

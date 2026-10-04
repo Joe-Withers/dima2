@@ -1,6 +1,6 @@
 export type Project = { id: number; name: string; root_path: string; host: string };
 
-export type Status = "running" | "idle" | "exited";
+export type Status = "running" | "needs_input" | "idle" | "exited";
 
 export type Worktree = {
   id: number;
@@ -16,6 +16,8 @@ export type Worktree = {
   archived_at: number | null;
   sessions: number;
   status: Status;
+  /** An agent finished its turn and the worktree hasn't been opened since. */
+  done: boolean;
 };
 
 export type FileStatus = "A" | "M" | "D";
@@ -33,7 +35,13 @@ export type WorktreeDetail = {
   files: ChangedFile[];
 };
 
-export type Session = { id: number; command: string; alive: boolean; running: boolean };
+export type Session = {
+  id: number;
+  command: string;
+  alive: boolean;
+  running: boolean;
+  agent_state: "running" | "needs_input" | "done" | null;
+};
 
 export type Comment = {
   id: number;
@@ -85,6 +93,7 @@ export const api = {
 
   sessions: (worktreeId: number) => request<Session[]>("GET", `/api/worktrees/${worktreeId}/sessions`),
   addSession: (worktreeId: number) => request<{ id: number }>("POST", `/api/worktrees/${worktreeId}/sessions`),
+  markSeen: (worktreeId: number) => request<void>("POST", `/api/worktrees/${worktreeId}/seen`),
   closeSession: (id: number) => request<void>("DELETE", `/api/sessions/${id}`),
 
   comments: (worktreeId: number, path: string) =>

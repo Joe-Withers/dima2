@@ -10,7 +10,8 @@ type Props = {
   onStep: (direction: -1 | 1) => void;
 };
 
-const dot = (s: Session) => (s.running ? "var(--accent-hover)" : s.alive ? "#5a5f66" : "var(--danger)");
+const dot = (s: Session) =>
+  !s.alive ? "var(--danger)" : s.agent_state === "needs_input" ? "var(--accent-hover)" : s.running ? "#8dbbee" : "#5a5f66";
 
 export default function SessionTabs({ sessions, active, onSelect, onAdd, onClose, onStep }: Props) {
   return (

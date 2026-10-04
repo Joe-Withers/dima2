@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
@@ -6,10 +6,12 @@ import NewWorktreeDialog from "../NewWorktreeDialog";
 import Page from "../Page";
 import { projectColor } from "../projectColor";
 import { timeAgo } from "../timeAgo";
+import { useAttentionCount, useWorktrees } from "../useWorktrees";
 
 export default function Worktrees() {
   const qc = useQueryClient();
-  const worktrees = useQuery({ queryKey: ["worktrees"], queryFn: api.worktrees, refetchInterval: 5000 });
+  const worktrees = useWorktrees();
+  const attention = useAttentionCount();
   const archive = useMutation({
     mutationFn: api.archiveWorktree,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["worktrees"] }),
@@ -37,6 +39,7 @@ export default function Worktrees() {
         <span className="muted">
           {active.length} active across {new Set(active.map((w) => w.project)).size} projects
         </span>
+        {attention > 0 && <span className="attention"><span className="badge">{attention}</span>need your attention</span>}
       </div>
       <div className="row">
         <select className="ctl" value={project} onChange={(e) => setProject(e.target.value)}>
@@ -62,11 +65,12 @@ export default function Worktrees() {
                 <td><span className="swatch" style={{ background: projectColor(w.project) }} />{w.project}</td>
                 <td className="mono">
                   {w.archived_at ? <>{w.branch}<span className="muted"> · archived</span></> : <Link className="branch" to={`/worktrees/${w.id}`}>{w.branch}</Link>}
+                  {w.done && <span className="badge">done</span>}
                 </td>
                 <td>
                   {!w.archived_at && (
                     <>
-                      <span className={`pill s-${w.status}`}><span className="d" />{w.status}</span>
+                      <span className={`pill s-${w.status}`}><span className="d" />{w.status.replace("_", " ")}</span>
                       <span className="faint small"> {w.sessions} session{w.sessions === 1 ? "" : "s"}</span>
                     </>
                   )}

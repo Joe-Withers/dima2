@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import { projectColor } from "../projectColor";
@@ -35,6 +35,12 @@ export default function Workspace() {
     onSuccess: () => navigate("/worktrees"),
     onError: (e) => alert(e.message),
   });
+
+  // Looking at a worktree acknowledges "done" for its sessions.
+  const hasDone = sessions.data?.some((s) => s.agent_state === "done");
+  useEffect(() => {
+    if (hasDone) api.markSeen(id).then(() => qc.invalidateQueries({ queryKey: ["worktrees"] }));
+  }, [hasDone, id]);
 
   const w = worktree.data;
   if (!w) return <p className="empty">{worktree.error ? worktree.error.message : "Loading…"}</p>;

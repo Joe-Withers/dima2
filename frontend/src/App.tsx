@@ -1,10 +1,17 @@
+import { useEffect } from "react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import Projects from "./pages/Projects";
 import Views from "./pages/Views";
 import Workspace from "./workspace/Workspace";
 import Worktrees from "./pages/Worktrees";
+import { useAttentionCount } from "./useWorktrees";
 
 export default function App() {
+  const attention = useAttentionCount();
+  useEffect(() => {
+    document.title = attention > 0 ? `(${attention}) dima2` : "dima2";
+  }, [attention]);
+
   return (
     <div className="app">
       <header className="topbar">

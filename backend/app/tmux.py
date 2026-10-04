@@ -16,8 +16,9 @@ def tmux(*args: str, input: str | None = None) -> str:
     return result.stdout
 
 
-def create(session_id: int, cwd: str) -> None:
-    tmux("new-session", "-d", "-s", name(session_id), "-c", cwd, "-x", "200", "-y", "50")
+def create(session_id: int, cwd: str, env: dict[str, str]) -> None:
+    env_args = [arg for key, value in env.items() for arg in ("-e", f"{key}={value}")]
+    tmux("new-session", "-d", "-s", name(session_id), "-c", cwd, "-x", "200", "-y", "50", *env_args)
     tmux("set-option", "-t", name(session_id), "remain-on-exit", "on")
     tmux("set-option", "-t", name(session_id), "status", "off")  # the app has its own tab bar
 
