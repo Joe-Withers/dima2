@@ -5,7 +5,7 @@ type Layout = { mode: Mode; ratio: number };
 
 const KEY = "dima2.layout";
 const DEFAULT: Layout = { mode: "balanced", ratio: 0.57 };
-const ORDER: Mode[] = ["top", "balanced", "bottom"]; // Ctrl+Up moves towards "top", Ctrl+Down towards "bottom"
+const ORDER: Mode[] = ["top", "balanced", "bottom"]; // Ctrl+Up moves the divider up (more room to the terminal), Ctrl+Down moves it down
 
 function load(): Layout {
   try {
@@ -28,7 +28,7 @@ export function useLayout() {
     const onKey = (e: KeyboardEvent) => {
       if (!e.ctrlKey || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
       e.preventDefault();
-      step(e.key === "ArrowUp" ? -1 : 1);
+      step(e.key === "ArrowUp" ? 1 : -1);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

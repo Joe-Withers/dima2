@@ -28,9 +28,9 @@ export default function SessionTabs({ sessions, active, onSelect, onAdd, onClose
       <button className="iconbtn" aria-label="New session" onClick={onAdd}><Plus /></button>
       <span className="grow" />
       <div className="layout-controls">
-        <button className="iconbtn" aria-label="Give more room to files (Ctrl+Up)" onClick={() => onStep(-1)}><ArrowUp /></button>
+        <button className="iconbtn" aria-label="Give more room to terminal (Ctrl+Up)" onClick={() => onStep(1)}><ArrowUp /></button>
         <span className="kbd">Ctrl ↑</span>
-        <button className="iconbtn" aria-label="Give more room to terminal (Ctrl+Down)" onClick={() => onStep(1)}><ArrowDown /></button>
+        <button className="iconbtn" aria-label="Give more room to files (Ctrl+Down)" onClick={() => onStep(-1)}><ArrowDown /></button>
         <span className="kbd">Ctrl ↓</span>
       </div>
     </div>
