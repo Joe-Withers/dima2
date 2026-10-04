@@ -15,7 +15,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <span className="brand">dima2</span>
+        <span className="brand"><img src="/dima2-icon.svg" alt="" width="28" height="28" />dima2</span>
         <nav>
           <NavLink to="/worktrees">Worktrees</NavLink>
           <NavLink to="/views">Views</NavLink>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" role="img" aria-label="dima2">
+<style>
+@keyframes d2-look{0%,10%{transform:translate(0,0)}14%,30%{transform:translate(-15px,0)}35%,38%{transform:translate(0,0)}42%,58%{transform:translate(15px,0)}63%,65%{transform:translate(0,0)}69%,80%{transform:translate(0,-3px)}85%,100%{transform:translate(0,0)}}
+@keyframes d2-look-s{0%,10%{transform:translate(0,0)}14%,30%{transform:translate(-4.5px,0)}35%,38%{transform:translate(0,0)}42%,58%{transform:translate(4.5px,0)}63%,65%{transform:translate(0,0)}69%,80%{transform:translate(0,-0.8px)}85%,100%{transform:translate(0,0)}}
+@keyframes d2-blink{0%,87%,93%,100%{transform:scaleY(1)}90%{transform:scaleY(.08)}}
+@keyframes d2-dl{0%,15%{fill:#343941}18%,29%{fill:#E8A33D}33%,100%{fill:#343941}}
+@keyframes d2-dr{0%,43%{fill:#343941}46%,57%{fill:#E8A33D}61%,100%{fill:#343941}}
+@keyframes d2-dt{0%,70%{fill:#343941}73%,79%{fill:#E8A33D}83%,100%{fill:#343941}}
+@keyframes d2-glow{0%,100%{opacity:.18}50%{opacity:.32}}
+.d2-eye{animation:d2-look 8s cubic-bezier(.65,0,.25,1) infinite}
+.d2-eye-s{animation:d2-look-s 8s cubic-bezier(.65,0,.25,1) infinite}
+.d2-visor{transform-box:view-box;transform-origin:64px 64px;animation:d2-blink 8s ease-in-out infinite}
+.d2-visor-s{transform-box:view-box;transform-origin:16px 16.5px;animation:d2-blink 8s ease-in-out infinite}
+.d2-halo{animation:d2-glow 2.6s ease-in-out infinite}
+.d2-dl{animation:d2-dl 8s linear infinite}
+.d2-dr{animation:d2-dr 8s linear infinite}
+.d2-dt{animation:d2-dt 8s linear infinite}
+@media (prefers-reduced-motion: reduce){.d2-eye,.d2-eye-s,.d2-visor,.d2-visor-s,.d2-halo,.d2-dl,.d2-dr,.d2-dt{animation:none}}</style>
+<rect x="0" y="0" width="32" height="32" rx="7" fill="#262B31"/>
+<g class="d2-visor-s"><rect x="5" y="12.5" width="22" height="8" rx="4" fill="#0B0C0E"/><g class="d2-eye-s"><circle cx="16" cy="16.5" r="2.8" fill="#F0B354"/></g></g>
+</svg>

@@ -14,7 +14,7 @@ body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 "IB
 .error { color: var(--danger); margin: 0; }
 
 .topbar { height: 44px; display: flex; align-items: center; gap: 24px; padding: 0 20px; background: var(--bg-chrome); border-bottom: 1px solid var(--border); }
-.brand { font: 500 14px "IBM Plex Mono", monospace; }
+.brand { display: inline-flex; align-items: center; gap: 8px; font: 500 14px "IBM Plex Mono", monospace; }
 .topbar nav { display: flex; gap: 4px; }
 .topbar nav a { display: flex; align-items: center; height: 44px; padding: 0 12px; color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; border-bottom: 2px solid transparent; }
 .topbar nav a:hover { color: var(--text); }
@@ -31,6 +31,7 @@ h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em; }
 
 .ctl { height: 40px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--bg-raised); color: var(--text); font: inherit; font-size: 13px; }
 select.ctl { height: 32px; padding: 0 30px 0 10px; appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%238b949e' stroke-width='1.5'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 11px center; }
+input.ctl[type="search"] { height: 32px; padding: 0 10px; }
 .btn { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--bg-raised); color: var(--text); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
 .btn:hover { background: #22262b; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
