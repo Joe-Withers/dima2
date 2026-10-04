@@ -1,11 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { api, Comment, FileStatus } from "../api";
+import { api, FileStatus } from "../api";
 import CommentRail from "./CommentRail";
 import MarkdownPreview from "./MarkdownPreview";
 import PanelHeader from "./PanelHeader";
-
-const NO_COMMENTS: Comment[] = []; // stable identity: a fresh [] each render would retrigger the preview's layout effect forever
+import { useComments } from "./useComments";
 
 type Props = {
   worktreeId: number;
@@ -13,24 +12,13 @@ type Props = {
   status: FileStatus;
   /** Active terminal tab: its id and display name. */
   target: { id: number; name: string } | null;
+  onOpenFile: (path: string) => void;
 };
 
-export default function ReviewPane({ worktreeId, path, status, target }: Props) {
-  const qc = useQueryClient();
+export default function ReviewPane({ worktreeId, path, status, target, onOpenFile }: Props) {
   const [unanchored, setUnanchored] = useState<Set<number>>(new Set());
   const source = useQuery({ queryKey: ["content", worktreeId, path], queryFn: () => api.content(worktreeId, path), refetchInterval: 3000 });
-  const commentsKey = ["comments", worktreeId, path];
-  const comments = useQuery({ queryKey: commentsKey, queryFn: () => api.comments(worktreeId, path) });
-  const commentList = comments.data ?? NO_COMMENTS;
-  const refresh = () => qc.invalidateQueries({ queryKey: commentsKey });
-
-  const add = useMutation({ mutationFn: (c: { block_id: string; quote: string; body: string }) => api.addComment(worktreeId, { path, ...c }), onSuccess: refresh });
-  const remove = useMutation({ mutationFn: api.deleteComment, onSuccess: refresh });
-  const send = useMutation({
-    mutationFn: (extra: string) => api.send(worktreeId, { path, session_id: target!.id, extra }),
-    onSuccess: refresh,
-    onError: (e) => alert(e.message),
-  });
+  const c = useComments(worktreeId, path, target);
 
   return (
     <div className="center">
@@ -43,17 +31,21 @@ export default function ReviewPane({ worktreeId, path, status, target }: Props) 
             worktreeId={worktreeId}
             path={path}
             source={source.data}
-            comments={commentList}
-            onAdd={add.mutate}
+            comments={c.fileComments}
+            onAdd={c.add}
             onUnanchored={setUnanchored}
           />
         )}
         <CommentRail
-          comments={commentList}
+          comments={c.railComments}
+          path={path}
+          scope={c.scope}
+          onScope={c.setScope}
           unanchored={unanchored}
           target={target?.name ?? null}
-          onDelete={remove.mutate}
-          onSend={send.mutate}
+          onDelete={c.remove}
+          onSend={c.send}
+          onOpenFile={onOpenFile}
         />
       </div>
     </div>

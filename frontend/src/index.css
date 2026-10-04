@@ -113,13 +113,18 @@ a { color: #8dbbee; }
 .fname { flex: 1; overflow: hidden; text-overflow: ellipsis; }
 .fname.md { color: #f0c27a; }
 
-.diff { flex: 1; overflow: auto; font-size: 13px; line-height: 1.7; }
-.dl { display: grid; grid-template-columns: 48px 48px 20px 1fr; min-width: max-content; white-space: pre; }
+.diff { flex: 1; min-width: 0; overflow: auto; font-size: 13px; line-height: 1.7; }
+.dl { display: grid; grid-template-columns: 28px 48px 48px 20px 1fr; min-width: max-content; white-space: pre; }
 .dl .no { padding-right: 12px; text-align: right; color: var(--faint); user-select: none; }
 .dl .sign { text-align: center; user-select: none; }
-.dl-hunk { padding-left: 116px; margin-block: 6px; background: #181c22; color: #8dbbee; }
-.dl-add { background: #14261d; } .dl-add .sign, .dl-add .no:nth-child(2) { color: #7fd1a6; }
-.dl-del { background: #2a1a1a; } .dl-del .sign, .dl-del .no:nth-child(1) { color: var(--danger); }
+.dl .gut { display: flex; align-items: center; justify-content: center; gap: 2px; user-select: none; }
+.dl .gut .mk { width: 18px; height: 18px; font-size: 10px; }
+.dl.has-c { box-shadow: inset 3px 0 0 var(--accent); }
+.dl.has-c.sent { box-shadow: inset 3px 0 0 #4a4f57; }
+.diff-inner { position: relative; min-width: max-content; }
+.dl-hunk { padding-left: 144px; margin-block: 6px; background: #181c22; color: #8dbbee; }
+.dl-add { background: #14261d; } .dl-add .sign, .dl-add .no:nth-child(3) { color: #7fd1a6; }
+.dl-del { background: #2a1a1a; } .dl-del .sign, .dl-del .no:nth-child(2) { color: var(--danger); }
 
 .review { flex: 1; min-height: 0; display: flex; }
 .doc-scroll { flex: 1; min-width: 0; overflow-y: auto; padding: 28px 40px 48px 24px; }
@@ -202,3 +207,11 @@ a { color: #8dbbee; }
 .views-search { width: 100%; height: 32px; margin: 8px 0 2px; }
 .item .item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .item .chip { margin-left: 8px; flex: none; }
+.seg { display: flex; padding: 2px; gap: 2px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--bg); }
+.seg button { flex: 1; height: 24px; border: 0; border-radius: 4px; background: none; color: var(--muted); font: 500 12px "IBM Plex Sans", sans-serif; cursor: pointer; }
+.seg button:hover { color: var(--text); }
+.seg button.on { background: #24292f; color: #fff; }
+.rail-file { display: flex; flex-direction: column; gap: 8px; }
+.rail-path { padding: 0; border: 0; background: none; text-align: left; font-size: 12px; color: var(--muted); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-path:hover { color: var(--text); text-decoration: underline; }
+.rail-path.here { color: var(--accent); }

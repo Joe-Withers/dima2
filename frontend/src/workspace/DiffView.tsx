@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api, FileStatus } from "../api";
+import CommentRail from "./CommentRail";
 import PanelHeader from "./PanelHeader";
+import { useComments } from "./useComments";
 
 type Line = { kind: "hunk" | "add" | "del" | "ctx"; old?: number; new?: number; text: string };
 
@@ -30,17 +33,83 @@ export function parseDiff(diff: string): Line[] {
 
 const SIGN = { hunk: "", add: "+", del: "−", ctx: "" };
 
-type Props = { worktreeId: number; path: string; status: FileStatus };
+/** Comments anchor to a diff line: "new:<n>" for lines in the new file, "old:<n>" for removed ones. */
+const lineKey = (l: Line) => (l.kind === "hunk" ? null : l.kind === "del" ? `old:${l.old}` : `new:${l.new}`);
+const collapse = (text: string) => text.replace(/\s+/g, " ").trim();
 
-export default function DiffView({ worktreeId, path, status }: Props) {
+type Props = {
+  worktreeId: number;
+  path: string;
+  status: FileStatus;
+  /** Active terminal tab: its id and display name. */
+  target: { id: number; name: string } | null;
+  onOpenFile: (path: string) => void;
+};
+
+type Draft = { key: string; quote: string; top: number };
+
+export default function DiffView({ worktreeId, path, status, target, onOpenFile }: Props) {
   const { data } = useQuery({
     queryKey: ["diff", worktreeId, path],
     queryFn: () => api.diff(worktreeId, path),
     refetchInterval: 3000,
   });
-  const lines = data ? parseDiff(data.diff) : [];
+  const c = useComments(worktreeId, path, target);
+  const inner = useRef<HTMLDivElement>(null);
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const [body, setBody] = useState("");
+  const lines = useMemo(() => (data ? parseDiff(data.diff) : []), [data]);
   const added = lines.filter((l) => l.kind === "add").length;
   const removed = lines.filter((l) => l.kind === "del").length;
+
+  // Numbered markers per commented line; a comment loses its anchor when its line is gone or its text changed.
+  const { marks, unanchored } = useMemo(() => {
+    const byKey = new Map(lines.flatMap((l) => (lineKey(l) ? [[lineKey(l)!, l] as const] : [])));
+    const marks = new Map<string, { id: number; n: number; sent: boolean }[]>();
+    const unanchored = new Set<number>();
+    c.fileComments.forEach((comment, i) => {
+      const line = byKey.get(comment.block_id);
+      if (!line || !collapse(line.text).includes(collapse(comment.quote.split("\n")[0]))) return void unanchored.add(comment.id);
+      marks.set(comment.block_id, [...(marks.get(comment.block_id) ?? []), { id: comment.id, n: i + 1, sent: !!comment.sent_at }]);
+    });
+    return { marks, unanchored };
+  }, [lines, c.fileComments]);
+
+  useEffect(() => setDraft(null), [path]);
+
+  // Any mouse selection inside the diff starts a comment, anchored to the line it starts on.
+  useEffect(() => {
+    const onSelected = (e: Event) => {
+      if ((e.target as Element).closest?.(".popover")) return;
+      const selection = window.getSelection();
+      const root = inner.current;
+      if (!selection || selection.isCollapsed || !root) return;
+      const range = selection.getRangeAt(0);
+      const rowOf = (node: Node) => (node instanceof Element ? node : node.parentElement)?.closest<HTMLElement>("[data-line]") ?? null;
+      const first = rowOf(range.startContainer);
+      if (!first || !root.contains(range.endContainer)) return;
+      const rows = [...root.querySelectorAll<HTMLElement>("[data-line]")];
+      const last = rowOf(range.endContainer) ?? first;
+      const span = rows.slice(rows.indexOf(first), rows.indexOf(last) + 1);
+      const quote = span.length > 1 ? span.map((r) => r.querySelector(".code")!.textContent).join("\n") : collapse(range.toString());
+      if (!quote.trim()) return;
+      setBody("");
+      setDraft({ key: first.dataset.line!, quote, top: range.getBoundingClientRect().bottom - root.getBoundingClientRect().top + 8 });
+    };
+    document.addEventListener("mouseup", onSelected);
+    return () => document.removeEventListener("mouseup", onSelected);
+  }, []);
+
+  function close() {
+    window.getSelection()?.removeAllRanges();
+    setDraft(null);
+  }
+
+  function submit() {
+    if (!draft || !body.trim()) return;
+    c.add({ block_id: draft.key, quote: draft.quote, body: body.trim() });
+    close();
+  }
 
   return (
     <div className="center">
@@ -48,16 +117,56 @@ export default function DiffView({ worktreeId, path, status }: Props) {
         <span className="mono st-A small">+{added}</span>
         <span className="mono st-D small">−{removed}</span>
       </PanelHeader>
-      <div className="diff mono">
-        {data && lines.length === 0 && <p className="empty">{data.diff.includes("Binary") ? "Binary file." : "No textual changes."}</p>}
-        {lines.map((l, i) => (
-          <div key={i} className={`dl dl-${l.kind}`}>
-            <span className="no">{l.old}</span>
-            <span className="no">{l.new}</span>
-            <span className="sign">{SIGN[l.kind]}</span>
-            <span className="code">{l.text}</span>
+      <div className="review">
+        <div className="diff mono">
+          {data && lines.length === 0 && <p className="empty">{data.diff.includes("Binary") ? "Binary file." : "No textual changes."}</p>}
+          <div className="diff-inner" ref={inner}>
+            {lines.map((l, i) => {
+              const key = lineKey(l);
+              const here = key ? marks.get(key) : undefined;
+              return (
+                <div key={i} className={`dl dl-${l.kind}${here ? (here.some((m) => !m.sent) ? " has-c" : " has-c sent") : ""}`} data-line={key ?? undefined}>
+                  <span className="gut">{here?.map((m) => <span key={m.id} className={`mk static${m.sent ? " sent" : ""}`} aria-label={`Comment ${m.n}${m.sent ? ", sent" : ""}`}>{m.n}</span>)}</span>
+                  <span className="no">{l.old}</span>
+                  <span className="no">{l.new}</span>
+                  <span className="sign">{SIGN[l.kind]}</span>
+                  <span className="code">{l.text}</span>
+                </div>
+              );
+            })}
+            {draft && (
+              <div role="dialog" aria-label="New comment" className="popover" style={{ top: draft.top, left: 144 }}>
+                <textarea
+                  className="ta"
+                  rows={2}
+                  autoFocus
+                  aria-label="Comment on selection"
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit();
+                    if (e.key === "Escape") close();
+                  }}
+                />
+                <div className="actions">
+                  <button className="btn small" onClick={close}>Cancel</button>
+                  <button className="btn primary small" onClick={submit} disabled={!body.trim()}>Add comment</button>
+                </div>
+              </div>
+            )}
           </div>
-        ))}
+        </div>
+        <CommentRail
+          comments={c.railComments}
+          path={path}
+          scope={c.scope}
+          onScope={c.setScope}
+          unanchored={unanchored}
+          target={target?.name ?? null}
+          onDelete={c.remove}
+          onSend={c.send}
+          onOpenFile={onOpenFile}
+        />
       </div>
     </div>
   );

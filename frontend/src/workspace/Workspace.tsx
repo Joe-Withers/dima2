@@ -89,9 +89,9 @@ export default function Workspace() {
           <FileTree files={w.files} selected={selected} onSelect={(path) => setParams({ file: path })} />
           {file ? (
             file.path.endsWith(".md") && file.status !== "D" ? (
-              <ReviewPane key={file.path} worktreeId={id} path={file.path} status={file.status} target={target} />
+              <ReviewPane key={file.path} worktreeId={id} path={file.path} status={file.status} target={target} onOpenFile={(path) => setParams({ file: path })} />
             ) : (
-              <DiffView key={file.path} worktreeId={id} path={file.path} status={file.status} />
+              <DiffView key={file.path} worktreeId={id} path={file.path} status={file.status} target={target} onOpenFile={(path) => setParams({ file: path })} />
             )
           ) : (
             <div className="center">
