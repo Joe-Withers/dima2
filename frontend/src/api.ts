@@ -45,6 +45,8 @@ export type Comment = {
   sent_to: string | null;
 };
 
+export type Directory = { path: string; parent: string | null; is_repo: boolean; dirs: { name: string; is_repo: boolean }[] };
+
 export type Refs = { default: string; refs: string[] };
 
 export type ViewEntry = { group: string; name: string; path: string };
@@ -68,6 +70,7 @@ export const api = {
   projects: () => request<Project[]>("GET", "/api/projects"),
   addProject: (p: { name: string; root_path: string }) => request<Project>("POST", "/api/projects", p),
   removeProject: (id: number) => request<void>("DELETE", `/api/projects/${id}`),
+  directory: (path: string) => request<Directory>("GET", `/api/fs?${q({ path })}`),
   refs: (projectId: number) => request<Refs>("GET", `/api/projects/${projectId}/refs`),
   views: (projectId: number) => request<ViewEntry[]>("GET", `/api/projects/${projectId}/views`),
   viewFile: (projectId: number, path: string) => request<ViewFile>("GET", `/api/projects/${projectId}/views/file?${q({ path })}`),

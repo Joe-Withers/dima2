@@ -181,3 +181,12 @@ a { color: #8dbbee; }
 .fm td { height: auto; padding: 6px 16px 6px 0; border: 0; font-size: 13px; vertical-align: top; white-space: normal; }
 .fm td:first-child { font-family: "IBM Plex Mono", monospace; color: var(--muted); white-space: nowrap; }
 .flow { margin: 0; white-space: pre-wrap; color: #c9c6bf; }
+
+/* folder picker */
+.path-field { position: relative; display: flex; }
+.path-field .ctl { flex: 1; padding-right: 44px; }
+.path-field .iconbtn { position: absolute; right: 4px; top: 4px; }
+.crumbs { display: flex; justify-content: space-between; gap: 8px; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; overflow-x: auto; white-space: nowrap; }
+.folder-list { max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; }
+.folder-list .item { justify-content: space-between; }
+.chip.repo { color: #7fd1a6; border-color: #2c5a45; }

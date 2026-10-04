@@ -1,9 +1,20 @@
-/** Find the range of `quote` (whitespace-collapsed) inside a block element, or null if the text changed. */
-export function findQuote(block: Element, quote: string): Range | null {
+const blockOf = (node: Node) => node.parentElement?.closest("[data-block-id]");
+
+/**
+ * Find the range of `quote` (whitespace-collapsed) starting in `block`. The quote may run on into following
+ * blocks, so the scan continues to the end of `root`. Returns null if the text no longer exists.
+ */
+export function findQuote(root: Element, block: Element, quote: string): Range | null {
+  if (!quote) return null;
   let text = "";
-  const map: [Text, number][] = [];
-  const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
-  for (let node = walker.nextNode() as Text | null; node; node = walker.nextNode() as Text | null) {
+  const map: ([Text, number] | null)[] = [];
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let node = walker.nextNode() as Text | null;
+  while (node && !block.contains(node)) node = walker.nextNode() as Text | null;
+  for (let previous: Element | null | undefined; node; node = walker.nextNode() as Text | null) {
+    const current = blockOf(node);
+    if (previous && current !== previous && !text.endsWith(" ")) (text += " ", map.push(null)); // block boundary reads as a space
+    previous = current;
     for (let i = 0; i < node.data.length; i++) {
       let ch = node.data[i];
       if (/\s/.test(ch)) {
@@ -15,11 +26,12 @@ export function findQuote(block: Element, quote: string): Range | null {
     }
   }
   const start = text.indexOf(quote);
-  if (start < 0 || !quote) return null;
+  const first = map[start];
+  const last = map[start + quote.length - 1];
+  if (start < 0 || !first || !last) return null;
   const range = document.createRange();
-  range.setStart(...map[start]);
-  const [endNode, endOffset] = map[start + quote.length - 1];
-  range.setEnd(endNode, endOffset + 1);
+  range.setStart(...first);
+  range.setEnd(last[0], last[1] + 1);
   return range;
 }
 

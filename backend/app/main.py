@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException
 
 from . import db
-from .routes import comments, projects, sessions, views, worktrees
+from .routes import comments, fs, projects, sessions, views, worktrees
 
 
 @asynccontextmanager
@@ -16,7 +16,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-for module in (projects, worktrees, sessions, comments, views):
+for module in (projects, worktrees, sessions, comments, views, fs):
     app.include_router(module.router, prefix="/api")
 
 class SPAFiles(StaticFiles):

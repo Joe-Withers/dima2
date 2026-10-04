@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FormEvent, useState } from "react";
 import { api } from "../api";
+import { Folder } from "../workspace/icons";
+import FolderBrowser from "../FolderBrowser";
 import Page from "../Page";
 import { projectColor } from "../projectColor";
 
@@ -12,6 +14,7 @@ export default function Projects() {
   const remove = useMutation({ mutationFn: api.removeProject, onSuccess: refresh });
   const [name, setName] = useState("");
   const [rootPath, setRootPath] = useState("");
+  const [browsing, setBrowsing] = useState(false);
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -23,9 +26,19 @@ export default function Projects() {
       <h1>Projects</h1>
       <form className="row" onSubmit={submit}>
         <input className="ctl" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-        <input className="ctl mono grow" placeholder="/path/to/git/repo" value={rootPath} onChange={(e) => setRootPath(e.target.value)} required />
+        <div className="path-field grow">
+          <input className="ctl mono" placeholder="/path/to/git/repo" value={rootPath} onChange={(e) => setRootPath(e.target.value)} required />
+          <button type="button" className="iconbtn" aria-label="Browse folders" onClick={() => setBrowsing(true)}><Folder /></button>
+        </div>
         <button className="btn primary">Add project</button>
       </form>
+      {browsing && (
+        <FolderBrowser
+          start={rootPath}
+          onPick={(path) => (setRootPath(path), setName((n) => n || path.split("/").pop()!), setBrowsing(false))}
+          onClose={() => setBrowsing(false)}
+        />
+      )}
       {add.error && <p className="error">{add.error.message}</p>}
       <div className="card">
         <table>

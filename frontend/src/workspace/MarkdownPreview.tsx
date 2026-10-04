@@ -54,7 +54,7 @@ export default function MarkdownPreview({ worktreeId, path, source, comments, on
         const below = stacked.get(c.block_id) ?? 0;
         stacked.set(c.block_id, below + 1);
         next.push({ id: c.id, n: i + 1, top: block.getBoundingClientRect().top - top0 + 3 + below * 26, sent: !!c.sent_at });
-        const range = findQuote(block, c.quote);
+        const range = findQuote(root, block, c.quote);
         if (range) ranges[c.sent_at ? "sent" : "unsent"].push(range);
       });
       setMarkers(next);
@@ -74,21 +74,31 @@ export default function MarkdownPreview({ worktreeId, path, source, comments, on
 
   useEffect(() => setDraft(null), [path]);
 
-  function onMouseUp() {
-    const selection = window.getSelection();
-    if (!selection || selection.isCollapsed) return;
-    const range = selection.getRangeAt(0);
-    const block = blockOf(range.startContainer);
-    const quote = range.toString().replace(/\s+/g, " ").trim();
-    if (!block || block !== blockOf(range.endContainer) || !quote) return;
-    const box = range.getBoundingClientRect();
-    const origin = inner.current!.getBoundingClientRect();
-    setHighlight("comment-draft", [range.cloneRange()]);
-    setBody("");
-    setDraft({ blockId: block.dataset.blockId!, quote, top: box.bottom - origin.top + 8, left: 40 });
-  }
+  // Any mouse selection inside the document starts a comment, including drags across several blocks.
+  // Listening on the document means releasing the mouse outside the article still counts.
+  useEffect(() => {
+    const onSelected = (e: Event) => {
+      if ((e.target as Element).closest?.(".popover")) return;
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed) return;
+      const range = selection.getRangeAt(0);
+      const root = inner.current!;
+      const block = blockOf(range.startContainer);
+      const quote = range.toString().replace(/\s+/g, " ").trim();
+      if (!block || !root.contains(range.endContainer) || !quote) return;
+      const box = range.getBoundingClientRect();
+      setHighlight("comment-draft", [range.cloneRange()]);
+      setBody("");
+      setDraft({ blockId: block.dataset.blockId!, quote, top: box.bottom - root.getBoundingClientRect().top + 8, left: 40 });
+    };
+    document.addEventListener("mouseup", onSelected);
+    return () => {
+      document.removeEventListener("mouseup", onSelected);
+    };
+  }, []);
 
   function close() {
+    window.getSelection()?.removeAllRanges();
     setDraft(null);
     setHighlight("comment-draft", []);
   }
@@ -100,7 +110,7 @@ export default function MarkdownPreview({ worktreeId, path, source, comments, on
   }
 
   return (
-    <article className="doc-scroll" onMouseUp={onMouseUp}>
+    <article className="doc-scroll">
       <div className="doc" ref={inner}>
         {markers.map((m) => (
           <span key={m.id} className={`mk${m.sent ? " sent" : ""}`} style={{ top: m.top }} aria-label={`Comment ${m.n}${m.sent ? ", sent" : ""}`}>

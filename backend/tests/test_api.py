@@ -134,3 +134,12 @@ def test_views(client, repo):
     f = client.get(f"/api/projects/{p['id']}/views/file", params={"path": views[0]["path"]}).json()
     assert f["frontmatter"] == {"name": "rev", "tools": "Read, Grep"} and f["body"] == "# Body\n"
     assert client.get(f"/api/projects/{p['id']}/views/file", params={"path": "a.txt"}).status_code == 404
+
+
+def test_folder_listing(client, repo, tmp_path):
+    (tmp_path / ".hidden").mkdir()
+    listing = client.get("/api/fs", params={"path": str(tmp_path)}).json()
+    assert listing["dirs"] == [{"name": "repo", "is_repo": True}] or {"name": "repo", "is_repo": True} in listing["dirs"]
+    assert all(not d["name"].startswith(".") for d in listing["dirs"])
+    assert listing["parent"] == str(tmp_path.parent)
+    assert client.get("/api/fs", params={"path": str(tmp_path / "nope")}).status_code == 400
