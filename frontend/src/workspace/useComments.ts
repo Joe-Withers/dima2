@@ -36,6 +36,11 @@ export function useComments(worktreeId: number, path: string, target: { id: numb
   const refresh = () => qc.invalidateQueries({ queryKey: key });
 
   const add = useMutation({ mutationFn: (c: { block_id: string; quote: string; body: string }) => api.addComment(worktreeId, { path, ...c }), onSuccess: refresh });
+  const edit = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: string }) => api.editComment(id, body),
+    onSuccess: refresh,
+    onError: (e) => alert(e.message),
+  });
   const remove = useMutation({ mutationFn: api.deleteComment, onSuccess: refresh });
   const send = useMutation({
     mutationFn: (extra: string) => api.send(worktreeId, { path: scope === "file" ? path : undefined, session_id: target!.id, extra }),
@@ -53,5 +58,5 @@ export function useComments(worktreeId: number, path: string, target: { id: numb
     remember(SHOW_SENT_KEY, String(next));
   }
 
-  return { fileComments, railComments: scope === "all" ? all : fileComments, scope, setScope, showSent, setShowSent, add: add.mutate, remove: remove.mutate, send: send.mutate };
+  return { fileComments, railComments: scope === "all" ? all : fileComments, scope, setScope, showSent, setShowSent, add: add.mutate, edit: (id: number, body: string) => edit.mutate({ id, body }), remove: remove.mutate, send: send.mutate };
 }

@@ -104,6 +104,7 @@ export const api = {
   comments: (worktreeId: number) => request<Comment[]>("GET", `/api/worktrees/${worktreeId}/comments`),
   addComment: (worktreeId: number, c: { path: string; block_id: string; quote: string; body: string }) =>
     request<Comment>("POST", `/api/worktrees/${worktreeId}/comments`, c),
+  editComment: (id: number, body: string) => request<Comment>("PATCH", `/api/comments/${id}`, { body }),
   deleteComment: (id: number) => request<void>("DELETE", `/api/comments/${id}`),
   send: (worktreeId: number, s: { path?: string; session_id: number; extra: string }) =>
     request<void>("POST", `/api/worktrees/${worktreeId}/send`, s),

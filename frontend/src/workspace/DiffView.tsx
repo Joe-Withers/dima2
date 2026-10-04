@@ -165,6 +165,7 @@ export default function DiffView({ worktreeId, path, status, target, onOpenFile 
           onShowSent={c.setShowSent}
           unanchored={unanchored}
           target={target?.name ?? null}
+          onEdit={c.edit}
           onDelete={c.remove}
           onSend={c.send}
           onOpenFile={onOpenFile}

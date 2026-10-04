@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Comment } from "../api";
-import { Close, Send } from "./icons";
+import { Close, Pencil, Send } from "./icons";
 import { Scope } from "./useComments";
 
 type Props = {
@@ -17,6 +17,7 @@ type Props = {
   unanchored: Set<number>;
   /** The active terminal tab, e.g. "session 2"; null when there is none. */
   target: string | null;
+  onEdit: (id: number, body: string) => void;
   onDelete: (id: number) => void;
   onSend: (extra: string) => void;
   onOpenFile: (path: string) => void;
@@ -24,16 +25,46 @@ type Props = {
 
 const time = (unix: number) => new Date(unix * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-function Card({ c, n, unanchored, onDelete }: { c: Comment; n: number; unanchored: boolean; onDelete: (id: number) => void }) {
+type CardProps = { c: Comment; n: number; unanchored: boolean; onEdit: (id: number, body: string) => void; onDelete: (id: number) => void };
+
+function Card({ c, n, unanchored, onEdit, onDelete }: CardProps) {
   const sent = !!c.sent_at;
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(c.body);
+  const save = () => {
+    if (draft.trim() && draft.trim() !== c.body) onEdit(c.id, draft);
+    setEditing(false);
+  };
   return (
     <div className={`card-c${sent ? " sent" : ""}`}>
       <div className="card-head">
         <span className={`mk static${sent ? " sent" : ""}`}>{n}</span>
         <span className="quote">{c.quote}</span>
-        {!sent && <button className="iconbtn small" aria-label={`Delete comment ${n}`} onClick={() => onDelete(c.id)}><Close /></button>}
+        {!sent && !editing && <button className="iconbtn small" aria-label={`Edit comment ${n}`} title="Edit" onClick={() => (setDraft(c.body), setEditing(true))}><Pencil /></button>}
+        {!sent && <button className="iconbtn small" aria-label={`Delete comment ${n}`} title="Delete" onClick={() => onDelete(c.id)}><Close /></button>}
       </div>
-      <p>{c.body}</p>
+      {editing ? (
+        <>
+          <textarea
+            className="ta"
+            rows={3}
+            autoFocus
+            aria-label={`Edit comment ${n}`}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) save();
+              if (e.key === "Escape") setEditing(false);
+            }}
+          />
+          <div className="actions">
+            <button className="btn small" onClick={() => setEditing(false)}>Cancel</button>
+            <button className="btn primary small" onClick={save} disabled={!draft.trim()}>Save</button>
+          </div>
+        </>
+      ) : (
+        <p>{c.body}</p>
+      )}
       <span className={sent ? "faint small" : "accent small"}>
         {sent ? `Sent to ${c.sent_to} · ${time(c.sent_at!)}` : "Not sent"}
         {unanchored && " · block not found"}
@@ -42,7 +73,7 @@ function Card({ c, n, unanchored, onDelete }: { c: Comment; n: number; unanchore
   );
 }
 
-export default function CommentRail({ comments, path, scope, onScope, showSent, onShowSent, unanchored, target, onDelete, onSend, onOpenFile }: Props) {
+export default function CommentRail({ comments, path, scope, onScope, showSent, onShowSent, unanchored, target, onEdit, onDelete, onSend, onOpenFile }: Props) {
   const [extra, setExtra] = useState("");
   const unsent = comments.filter((c) => !c.sent_at).length;
   const canSend = target !== null && (unsent > 0 || extra.trim() !== "");
@@ -79,15 +110,15 @@ export default function CommentRail({ comments, path, scope, onScope, showSent, 
         )}
         {scope === "file" ? (
           <>
-            {inFile(path).filter(({ c }) => !unanchored.has(c.id)).map(({ c, n }) => <Card key={c.id} c={c} n={n} unanchored={false} onDelete={onDelete} />)}
+            {inFile(path).filter(({ c }) => !unanchored.has(c.id)).map(({ c, n }) => <Card key={c.id} c={c} n={n} unanchored={false} onEdit={onEdit} onDelete={onDelete} />)}
             {inFile(path).some(({ c }) => unanchored.has(c.id)) && <span className="cap">Block not found</span>}
-            {inFile(path).filter(({ c }) => unanchored.has(c.id)).map(({ c, n }) => <Card key={c.id} c={c} n={n} unanchored onDelete={onDelete} />)}
+            {inFile(path).filter(({ c }) => unanchored.has(c.id)).map(({ c, n }) => <Card key={c.id} c={c} n={n} unanchored onEdit={onEdit} onDelete={onDelete} />)}
           </>
         ) : (
           files.map((file) => (
             <div key={file} className="rail-file">
               <button className={`rail-path mono${file === path ? " here" : ""}`} title={file} onClick={() => onOpenFile(file)}>{file}</button>
-              {inFile(file).map(({ c, n }) => <Card key={c.id} c={c} n={n} unanchored={file === path && unanchored.has(c.id)} onDelete={onDelete} />)}
+              {inFile(file).map(({ c, n }) => <Card key={c.id} c={c} n={n} unanchored={file === path && unanchored.has(c.id)} onEdit={onEdit} onDelete={onDelete} />)}
             </div>
           ))
         )}

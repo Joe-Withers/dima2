@@ -52,6 +52,21 @@ def add_comment(id: int, body: CommentIn):
         return dict(db.get(conn, "comments", cur.lastrowid))
 
 
+class CommentEdit(BaseModel):
+    body: str
+
+
+@router.patch("/comments/{id}")
+def edit_comment(id: int, edit: CommentEdit):
+    with db.connect() as conn:
+        if db.get(conn, "comments", id)["sent_at"] is not None:
+            raise HTTPException(409, "comment was already sent")
+        if not edit.body.strip():
+            raise HTTPException(400, "comment is empty")
+        conn.execute("UPDATE comments SET body = ? WHERE id = ?", (edit.body.strip(), id))
+        return dict(db.get(conn, "comments", id))
+
+
 @router.delete("/comments/{id}", status_code=204)
 def delete_comment(id: int):
     with db.connect() as conn:

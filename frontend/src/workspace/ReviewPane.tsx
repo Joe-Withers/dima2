@@ -45,6 +45,7 @@ export default function ReviewPane({ worktreeId, path, status, target, onOpenFil
           onShowSent={c.setShowSent}
           unanchored={unanchored}
           target={target?.name ?? null}
+          onEdit={c.edit}
           onDelete={c.remove}
           onSend={c.send}
           onOpenFile={onOpenFile}
