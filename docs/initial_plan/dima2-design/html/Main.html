@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en" data-rendered="1"><head>
+<meta charset="utf-8">
+<title>dima2 · Worktrees</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap"><style>
+body{margin:0;background:#121417}
+a{color:#8DBBEE}a:hover{color:#B5D3F5}
+.app{font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.45;color:#E7E4DD;background:#121417}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.topbar{height:44px;box-sizing:border-box;display:flex;align-items:center;gap:24px;padding:0 20px;border-bottom:1px solid #262A30;background:#0E1013}
+.brand{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:14px;color:#E7E4DD}
+.nav{display:inline-flex;align-items:center;height:44px;padding:0 12px;color:#A0A4AB;text-decoration:none;font-size:13px;font-weight:500;border-bottom:2px solid transparent;box-sizing:border-box}
+.nav:hover{color:#E7E4DD}
+.nav.on{color:#E7E4DD;border-bottom-color:#E8A33D}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border-radius:6px;border:1px solid #343941;background:#1A1D21;color:#E7E4DD;font:inherit;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap}
+.btn:hover{background:#22262B;color:#E7E4DD}
+.btn.primary{background:#E8A33D;border-color:#E8A33D;color:#1A1205}
+.btn.primary:hover{background:#F0B354;color:#1A1205}
+.iconbtn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:0;background:transparent;color:#A0A4AB;cursor:pointer}
+.iconbtn:hover{background:#22262B;color:#E7E4DD}
+.ctl{height:40px;box-sizing:border-box;border:1px solid #343941;background:#1A1D21;color:#E7E4DD;border-radius:6px;padding:0 12px;font:inherit;font-size:13px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 10px 2px 8px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid;white-space:nowrap}
+.pill .d{width:7px;height:7px;border-radius:50%;background:currentColor}
+.s-running{color:#8DBBEE;border-color:#2C4560;background:#16212D}
+.s-input{color:#F0B354;border-color:#5C4320;background:#2A2013}
+.s-idle{color:#A0A4AB;border-color:#30343A;background:#181B1F}
+.s-exited{color:#E89A8C;border-color:#553029;background:#26191A}
+.badge{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:999px;background:#E8A33D;color:#1A1205;font-size:11px;font-weight:600}
+table{border-collapse:collapse;width:100%}
+th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#7C8188;padding:10px 16px;border-bottom:1px solid #262A30;white-space:nowrap}
+td{padding:0 16px;height:56px;border-bottom:1px solid #1F2227;white-space:nowrap;vertical-align:middle}
+tbody tr:hover td{background:#171A1E}
+.branch{font-family:'IBM Plex Mono',monospace;font-size:13px;color:#E7E4DD;text-decoration:none}
+.branch:hover{color:#8DBBEE;text-decoration:underline}
+.arch td{color:#7C8188;height:48px}
+.arch .branch{color:#A0A4AB}
+</style></head>
+<body>
+
+
+<div class="app" style="min-height: 900px; display: flex; flex-direction: column">
+<header class="topbar">
+<span class="brand">dima2</span>
+<nav aria-label="Main" style="display: flex; gap: 4px">
+<a class="nav on" href="Main.html" aria-current="page">Worktrees</a>
+<a class="nav" href="Views.html">Views</a>
+<a class="nav" href="#projects">Projects</a>
+</nav>
+</header>
+<main style="width: 100%; max-width: 1360px; margin: 0 auto; padding: 32px 40px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap">
+<h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em">Worktrees</h1>
+<span style="color: #A0A4AB; font-size: 13px">6 active across 3 projects</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; color: #F0B354; font-size: 13px; font-weight: 500"><span class="badge">2</span>need your attention</span>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<label class="sr" for="proj">Project</label>
+<select id="proj" class="ctl" style="min-width: 160px">
+<option>All projects</option>
+<option>dima2</option>
+<option>thenn</option>
+<option>pocketlog</option>
+</select>
+<label class="sr" for="q">Search branches</label>
+<div style="position: relative; flex: 1 1 240px; max-width: 360px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C8188" stroke-width="2" stroke-linecap="round" style="position: absolute; left: 12px; top: 12px" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+<input id="q" class="ctl" type="search" placeholder="Search branches" style="width: 100%; padding-left: 36px">
+</div>
+<label style="display: inline-flex; align-items: center; gap: 8px; color: #A0A4AB; font-size: 13px; min-height: 40px; cursor: pointer"><input type="checkbox" style="width: 16px; height: 16px; accent-color: #E8A33D">Show archived</label>
+<div style="flex: 1 1 0"></div>
+<a class="btn primary" href="NewWorktree.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>New worktree</a>
+</div>
+<div style="border: 1px solid #262A30; border-radius: 8px; overflow-x: auto; background: #14171A">
+<table>
+<thead>
+<tr><th style="width: 140px">Project</th><th>Branch</th><th style="width: 190px">Status</th><th style="width: 170px">Changes</th><th style="width: 110px">vs base</th><th style="width: 120px">Last activity</th><th style="width: 48px"><span class="sr">Actions</span></th></tr>
+</thead>
+<tbody>
+
+<tr>
+<td><span style="display: inline-flex; align-items: center; gap: 10px; color: #C9C6BF"><span style="width: 10px; height: 10px; border-radius: 3px; background: #6CA6E8"></span>dima2</span></td>
+<td><span style="display: inline-flex; align-items: center; gap: 10px"><a class="branch" href="Workspace.html">feat/comment-anchoring</a><span class="badge">review</span></span></td>
+<td><span style="display: inline-flex; align-items: center; gap: 10px"><span class="pill s-input"><span class="d"></span>needs input</span><span style="color: #7C8188; font-size: 12px">2 sessions</span></span></td>
+<td><span class="mono" style="font-size: 13px">14 files</span><span class="mono" style="font-size: 13px; color: #F0B354"> · 3 md</span></td>
+<td><span class="mono" style="font-size: 13px; color: #A0A4AB">↑3 ↓0</span></td>
+<td style="color: #A0A4AB; font-size: 13px">2 min ago</td>
+<td><button class="iconbtn" type="button" aria-label="Worktree actions"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg></button></td>
+</tr>
+
+<tr>
+<td><span style="display: inline-flex; align-items: center; gap: 10px; color: #C9C6BF"><span style="width: 10px; height: 10px; border-radius: 3px; background: #6CA6E8"></span>dima2</span></td>
+<td><span style="display: inline-flex; align-items: center; gap: 10px"><a class="branch" href="Workspace.html">feat/pty-manager</a></span></td>
+<td><span style="display: inline-flex; align-items: center; gap: 10px"><span class="pill s-running"><span class="d"></span>running</span><span style="color: #7C8188; font-size: 12px">1 session</span></span></td>
+<td><span class="mono" style="font-size: 13px">9 files</span><span class="mono" style="font-size: 13px; color: #F0B354"> · 1 md</span></td>
+<td><span class="mono" style="font-size: 13px; color: #A0A4AB">↑5 ↓1</span></td>
+<td style="color: #A0A4AB; font-size: 13px">just now</td>
+<td><button class="iconbtn" type="button" aria-label="Worktree actions"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg></button></td>
+</tr>
+
+<tr>
+<td><span style="display: inline-flex; align-items: center; gap: 10px; color: #C9C6BF"><span style="width: 10px; height: 10px; border-radius: 3px; background: #6CA6E8"></span>dima2</span></td>
+<td><span style="display: inline-flex; align-items: center; gap: 10px"><a class="branch" href="Workspace.html">spike/xterm-keybinds</a></span></td>
+<td><span style="display: inline-flex; align-items: center; gap: 10px"><span class="pill s-running"><span class="d"></span>running</span><span style="color: #7C8188; font-size: 12px">1 session</span></span></td>
+<td><span class="mono" style="font-size: 13px">3 files</span></td>
+<td><span class="mono" style="font-size: 13px; color: #A0A4AB">↑1 ↓0</span></td>
+<td style="color: #A0A4AB; font-size: 13px">1 min ago</td>
+<td><button class="iconbtn" type="button" aria-label="Worktree actions"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg></button></td>
+</tr>
+
+<tr>
+<td><span style="display: inline-flex; align-items: center; gap: 10px; color: #C9C6BF"><span style="width: 10px; height: 10px; border-radius: 3px; background: #B38BE0"></span>thenn</span></td>
+<td><span style="display: inline-flex; align-items: center; gap: 10px"><a class="branch" href="Workspace.html">spec/flow-retry</a></span></td>
+<td><span style="display: inline-flex; align-items: center; gap: 10px"><span class="pill s-idle"><span class="d"></span>idle</span><span style="color: #7C8188; font-size: 12px">1 session</span></span></td>
+<td><span class="mono" style="font-size: 13px">4 files</span><span class="mono" style="font-size: 13px; color: #F0B354"> · 4 md</span></td>
+<td><span class="mono" style="font-size: 13px; color: #A0A4AB">↑2 ↓0</span></td>
+<td style="color: #A0A4AB; font-size: 13px">38 min ago</td>
+<td><button class="iconbtn" type="button" aria-label="Worktree actions"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg></button></td>
+</tr>
+
+<tr>
+<td><span style="display: inline-flex; align-items: center; gap: 10px; color: #C9C6BF"><span style="width: 10px; height: 10px; border-radius: 3px; background: #5FBF8F"></span>pocketlog</span></td>
+<td><span style="display: inline-flex; align-items: center; gap: 10px"><a class="branch" href="Workspace.html">fix/sync-conflict</a><span class="badge">done</span></span></td>
+<td><span style="display: inline-flex; align-items: center; gap: 10px"><span class="pill s-exited"><span class="d"></span>exited</span><span style="color: #7C8188; font-size: 12px">2 sessions</span></span></td>
+<td><span class="mono" style="font-size: 13px">6 files</span></td>
+<td><span class="mono" style="font-size: 13px; color: #A0A4AB">↑4 ↓2</span></td>
+<td style="color: #A0A4AB; font-size: 13px">3 h ago</td>
+<td><button class="iconbtn" type="button" aria-label="Worktree actions"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg></button></td>
+</tr>
+
+<tr>
+<td><span style="display: inline-flex; align-items: center; gap: 10px; color: #C9C6BF"><span style="width: 10px; height: 10px; border-radius: 3px; background: #B38BE0"></span>thenn</span></td>
+<td><span style="display: inline-flex; align-items: center; gap: 10px"><a class="branch" href="Workspace.html">chore/yaml-schema</a></span></td>
+<td><span style="display: inline-flex; align-items: center; gap: 10px"><span class="pill s-idle"><span class="d"></span>idle</span><span style="color: #7C8188; font-size: 12px">0 sessions</span></span></td>
+<td><span class="mono" style="font-size: 13px">2 files</span></td>
+<td><span class="mono" style="font-size: 13px; color: #A0A4AB">↑1 ↓7</span></td>
+<td style="color: #A0A4AB; font-size: 13px">yesterday</td>
+<td><button class="iconbtn" type="button" aria-label="Worktree actions"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg></button></td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+</main>
+</div>
+
+
+
+
+</body></html>

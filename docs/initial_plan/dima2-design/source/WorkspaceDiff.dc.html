@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>dima2 · Workspace · code diff</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#121417}
+a{color:#8DBBEE}a:hover{color:#B5D3F5}
+.app{font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.45;color:#E7E4DD;background:#121417}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.topbar{height:44px;box-sizing:border-box;display:flex;align-items:center;gap:24px;padding:0 20px;border-bottom:1px solid #262A30;background:#0E1013}
+.brand{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:14px;color:#E7E4DD}
+.nav{display:inline-flex;align-items:center;height:44px;padding:0 12px;color:#A0A4AB;text-decoration:none;font-size:13px;font-weight:500;border-bottom:2px solid transparent;box-sizing:border-box}
+.nav:hover{color:#E7E4DD}
+.nav.on{color:#E7E4DD;border-bottom-color:#E8A33D}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:0 14px;border-radius:6px;border:1px solid #343941;background:#1A1D21;color:#E7E4DD;font:inherit;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap}
+.btn:hover{background:#22262B;color:#E7E4DD}
+.iconbtn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:0;background:transparent;color:#A0A4AB;cursor:pointer;flex:none}
+.iconbtn:hover{background:#22262B;color:#E7E4DD}
+.phead{height:40px;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:0 12px 0 16px;border-bottom:1px solid #22262B;background:#16191C;flex:none}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#A0A4AB}
+.tree-row{display:flex;align-items:center;gap:8px;height:26px;padding-right:12px;font-size:13px;color:#C9C6BF;text-decoration:none;white-space:nowrap}
+.tree-row:hover{background:#1C2024;color:#E7E4DD}
+.tree-row.sel{background:#24292F;color:#FFFFFF}
+.tree-dir{display:flex;align-items:center;gap:6px;height:26px;font-size:12px;color:#7C8188;white-space:nowrap}
+.st{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;width:12px;text-align:center;flex:none}
+.st-A{color:#7FD1A6}.st-M{color:#8DBBEE}.st-D{color:#E89A8C}
+.fname{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis}
+.dl{display:flex;font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:22px;white-space:pre}
+.dl .n{width:48px;flex:none;text-align:right;padding-right:10px;color:#5A5F66;box-sizing:border-box;user-select:none}
+.dl .g{width:20px;flex:none;text-align:center;user-select:none}
+.dl .t{flex:1 1 auto;padding-right:16px}
+.dl.ctx .t{color:#C9C6BF}
+.dl.add{background:rgba(95,191,143,.11)}
+.dl.add .g,.dl.add .t{color:#B9EDD0}
+.dl.add .n{color:#4F8A6B}
+.dl.del{background:rgba(224,122,106,.11)}
+.dl.del .g,.dl.del .t{color:#F2C1B8}
+.dl.del .n{color:#9A5A50}
+.dl.hunk{background:#171C24;color:#8DBBEE;margin:8px 0 2px}
+.dl.hunk .t{color:#8DBBEE}
+.tab{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;font-size:13px;color:#A0A4AB;border:0;border-right:1px solid #22262B;background:transparent;cursor:pointer;font-family:'IBM Plex Mono',monospace;box-sizing:border-box}
+.tab:hover{color:#E7E4DD;background:#171A1E}
+.tab.on{color:#E7E4DD;background:#0B0C0E;box-shadow:inset 0 2px 0 #E8A33D}
+.kbd{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#A0A4AB;border:1px solid #343941;border-radius:4px;padding:1px 5px}
+.term{font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.6;color:#D6D3CC;white-space:pre}
+</style>
+</helmet>
+<div class="app" style="height: 900px; display: flex; flex-direction: column; overflow: hidden">
+<header class="topbar">
+<span class="brand">dima2</span>
+<nav aria-label="Main" style="display: flex; gap: 4px">
+<a class="nav on" href="Main.dc.html">Worktrees</a>
+<a class="nav" href="Views.dc.html">Views</a>
+<a class="nav" href="#projects">Projects</a>
+</nav>
+</header>
+<div style="min-height: 52px; box-sizing: border-box; display: flex; align-items: center; gap: 16px; padding: 6px 12px 6px 16px; border-bottom: 1px solid #262A30; flex-wrap: wrap; flex: none">
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 6px; color: #A0A4AB; text-decoration: none; font-size: 13px; min-height: 36px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Worktrees</a>
+<span style="width: 1px; height: 20px; background: #30343A"></span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #6CA6E8"></span><span style="color: #A0A4AB">dima2</span><span style="color: #5A5F66">/</span><span class="mono" style="font-weight: 500">feat/comment-anchoring</span></span>
+<span class="mono" style="font-size: 12px; color: #A0A4AB">↑3 ↓0 vs origin/main</span>
+<span class="mono" style="font-size: 12px; color: #A0A4AB">14 files · <span style="color: #F0B354">3 md</span></span>
+<div style="flex: 1 1 0"></div>
+<button class="btn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v13H3zM3 7l2-3h14l2 3M9 12h6"></path></svg>Archive</button>
+</div>
+<div style="flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column">
+<section aria-label="Files" style="height: 458px; display: flex; flex-direction: column; flex: none; overflow: hidden">
+<div style="display: flex; flex: none">
+<div class="phead" style="width: 280px; border-right: 1px solid #22262B"><span class="cap">Changes</span><span class="mono" style="font-size: 11px; color: #7C8188">14</span></div>
+<div class="phead" style="flex: 1 1 auto; min-width: 0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A0A4AB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 8l-4 4 4 4M15 8l4 4-4 4"></path></svg><span class="mono" style="font-size: 12px; color: #E7E4DD">backend/dima2/comments.py</span><span class="mono st-M" style="font-size: 11px">M</span><span class="mono" style="font-size: 12px; color: #7FD1A6">+14</span><span class="mono" style="font-size: 12px; color: #E89A8C">−1</span></div>
+</div>
+<div style="flex: 1 1 auto; min-height: 0; display: flex">
+<nav aria-label="Changed files" style="width: 280px; flex: none; border-right: 1px solid #22262B; overflow-y: auto; padding: 6px 0; background: #14171A">
+<sc-for list="{{tree}}" as="it" hint-placeholder-count="14">
+<sc-if value="{{it.folder}}" hint-placeholder-val="{{false}}"><div class="tree-dir" style="{{it.pad}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>{{it.name}}</div></sc-if>
+<sc-if value="{{it.file}}" hint-placeholder-val="{{true}}"><a class="tree-row {{it.selCls}}" href="{{it.href}}" style="{{it.pad}}"><span class="fname" style="color: {{it.nameColor}}">{{it.name}}</span><span class="st st-{{it.st}}">{{it.st}}</span></a></sc-if>
+</sc-for>
+</nav>
+<div style="flex: 1 1 auto; min-width: 0; overflow: auto; padding: 4px 0 24px; background: #121417">
+<sc-for list="{{lines}}" as="l" hint-placeholder-count="20">
+<div class="dl {{l.k}}"><span class="n">{{l.o}}</span><span class="n">{{l.n}}</span><span class="g">{{l.g}}</span><span class="t">{{l.t}}</span></div>
+</sc-for>
+</div>
+</div>
+</section>
+<div aria-hidden="true" style="height: 6px; flex: none; background: #0E1013; border-top: 1px solid #262A30; border-bottom: 1px solid #262A30; display: flex; align-items: center; justify-content: center; cursor: row-resize"><span style="width: 36px; height: 2px; border-radius: 2px; background: #3A4048"></span></div>
+<section aria-label="Terminal sessions" style="height: 340px; flex: none; display: flex; flex-direction: column; background: #0B0C0E; overflow: hidden">
+<div style="height: 40px; flex: none; display: flex; align-items: stretch; background: #121417; border-bottom: 1px solid #22262B">
+<div role="tablist" aria-label="Sessions" style="display: flex; align-items: stretch; min-width: 0; overflow-x: auto">
+<button class="tab" type="button" role="tab" aria-selected="false"><span style="width: 7px; height: 7px; border-radius: 50%; background: #F0B354"></span>1 · claude</button>
+<button class="tab on" type="button" role="tab" aria-selected="true"><span style="width: 7px; height: 7px; border-radius: 50%; background: #5A5F66"></span>2 · bash</button>
+</div>
+<button class="iconbtn" type="button" aria-label="New session" style="align-self: center; margin-left: 4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+<div style="flex: 1 1 0"></div>
+<div style="display: flex; align-items: center; gap: 4px; padding-right: 8px">
+<button class="iconbtn" type="button" aria-label="Give more room to files (Ctrl+Up)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 14l6-6 6 6"></path></svg></button>
+<span class="kbd">Ctrl ↑</span>
+<button class="iconbtn" type="button" aria-label="Give more room to terminal (Ctrl+Down)" style="margin-left: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 10l6 6 6-6"></path></svg></button>
+<span class="kbd">Ctrl ↓</span>
+</div>
+</div>
+<div class="term" style="flex: 1 1 auto; min-height: 0; overflow: auto; padding: 12px 16px"><span style="color: #7FD1A6">~/code/dima2/.worktrees/feat-comment-anchoring</span> <span style="color: #7C8188">$</span> pytest tests/test_comments.py -q
+........                                                        <span style="color: #7C8188">[100%]</span>
+<span style="color: #7FD1A6">8 passed</span> in 0.41s
+<span style="color: #7FD1A6">~/code/dima2/.worktrees/feat-comment-anchoring</span> <span style="color: #7C8188">$</span> <span style="background: #D6D3CC; color: #0B0C0E"> </span></div>
+</section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const pad = (n) => 'padding-left: ' + (14 + n * 14) + 'px';
+    const D = (name, n) => ({ folder: true, file: false, name, pad: pad(n) });
+    const F = (name, st, n, sel) => {
+      const md = /\.md$/.test(name);
+      return {
+        folder: false, file: true, name, st, pad: pad(n),
+        selCls: sel ? 'sel' : '',
+        nameColor: md ? '#F0C27A' : 'inherit',
+        href: md ? 'Workspace.dc.html' : 'WorkspaceDiff.dc.html'
+      };
+    };
+    const L = (k, o, n, t) => ({ k, o: o || '', n: n || '', g: k === 'add' ? '+' : k === 'del' ? '−' : '', t });
+    return {
+      tree: [
+        D('specs/003-comment-anchoring', 0),
+        F('spec.md', 'A', 1),
+        F('plan.md', 'A', 1),
+        F('research.md', 'A', 1),
+        D('backend/dima2', 0),
+        F('comments.py', 'M', 1, true),
+        F('db.py', 'M', 1),
+        F('migrations/004_comments.sql', 'A', 1),
+        D('frontend/src', 0),
+        F('review/MarkdownPreview.tsx', 'A', 1),
+        F('review/CommentRail.tsx', 'A', 1),
+        F('review/blockIds.ts', 'A', 1),
+        F('review/review.css', 'A', 1),
+        F('terminal/SessionTabs.tsx', 'M', 1),
+        F('api/comments.ts', 'A', 1),
+        D('tests', 0),
+        F('test_comments.py', 'A', 1),
+        F('test_block_ids.py', 'A', 1)
+      ],
+      lines: [
+        L('hunk', '', '', '@@ -1,5 +1,6 @@'),
+        L('ctx', 1, 1, 'from dataclasses import dataclass'),
+        L('add', '', 2, 'from datetime import datetime'),
+        L('ctx', 2, 3, ''),
+        L('ctx', 3, 4, 'from .db import connect'),
+        L('ctx', 4, 5, ''),
+        L('hunk', '', '', '@@ -16,8 +17,21 @@ class Comment:'),
+        L('ctx', 16, 17, '    project_id: int'),
+        L('ctx', 17, 18, '    branch: str'),
+        L('ctx', 18, 19, '    file_path: str'),
+        L('del', 19, '', '    anchor_text: str'),
+        L('add', '', 20, '    block_id: str'),
+        L('ctx', 20, 21, '    body: str'),
+        L('ctx', 21, 22, '    created_at: datetime'),
+        L('add', '', 23, '    sent_at: datetime | None = None'),
+        L('add', '', 24, ''),
+        L('add', '', 25, ''),
+        L('add', '', 26, 'def mark_sent(comment_ids: list[int]) -> None:'),
+        L('add', '', 27, '    now = datetime.now()'),
+        L('add', '', 28, '    with connect() as db:'),
+        L('add', '', 29, '        db.executemany('),
+        L('add', '', 30, '            "UPDATE comments SET sent_at = ? WHERE id = ?",'),
+        L('add', '', 31, '            [(now, cid) for cid in comment_ids],'),
+        L('add', '', 32, '        )')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

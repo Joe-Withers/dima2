@@ -1,0 +1,47 @@
+import { FitAddon } from "@xterm/addon-fit";
+import { Terminal as XTerm } from "@xterm/xterm";
+import "@xterm/xterm/css/xterm.css";
+import { useEffect, useRef } from "react";
+
+const MIN_HEIGHT = 80; // don't resize the pty while the region is collapsed to its tab bar
+
+export default function Terminal({ sessionId }: { sessionId: number }) {
+  const container = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = container.current!;
+    const term = new XTerm({
+      fontFamily: '"IBM Plex Mono", monospace',
+      fontSize: 13,
+      cursorBlink: true,
+      theme: { background: "#0B0C0E", foreground: "#D6D3CC" },
+    });
+    const fit = new FitAddon();
+    term.loadAddon(fit);
+    term.open(el);
+    // Ctrl+Up/Down belong to the app's layout shortcuts, not the pty.
+    term.attachCustomKeyEventHandler((e) => !(e.ctrlKey && (e.key === "ArrowUp" || e.key === "ArrowDown")));
+
+    const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/sessions/${sessionId}/ws`);
+    ws.binaryType = "arraybuffer";
+    const sendSize = () => {
+      if (el.clientHeight < MIN_HEIGHT || ws.readyState !== WebSocket.OPEN) return;
+      fit.fit();
+      ws.send(JSON.stringify({ resize: [term.cols, term.rows] }));
+    };
+    ws.onopen = () => (sendSize(), term.focus());
+    ws.onmessage = (e) => term.write(new Uint8Array(e.data));
+    ws.onclose = () => term.write("\r\n\x1b[90m[disconnected]\x1b[0m\r\n");
+    term.onData((data) => ws.readyState === WebSocket.OPEN && ws.send(new TextEncoder().encode(data)));
+
+    const observer = new ResizeObserver(sendSize);
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      ws.close();
+      term.dispose();
+    };
+  }, [sessionId]);
+
+  return <div ref={container} className="xterm-host" />;
+}

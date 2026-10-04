@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" data-rendered="1"><head>
+<meta charset="utf-8">
+<title>dima2 · Views</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=IBM+Plex+Serif:wght@400;500&amp;display=swap"><style>
+body{margin:0;background:#121417}
+a{color:#8DBBEE}a:hover{color:#B5D3F5}
+.app{font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.45;color:#E7E4DD;background:#121417}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.topbar{height:44px;box-sizing:border-box;display:flex;align-items:center;gap:24px;padding:0 20px;border-bottom:1px solid #262A30;background:#0E1013}
+.brand{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:14px;color:#E7E4DD}
+.nav{display:inline-flex;align-items:center;height:44px;padding:0 12px;color:#A0A4AB;text-decoration:none;font-size:13px;font-weight:500;border-bottom:2px solid transparent;box-sizing:border-box}
+.nav:hover{color:#E7E4DD}
+.nav.on{color:#E7E4DD;border-bottom-color:#E8A33D}
+.ctl{height:40px;box-sizing:border-box;border:1px solid #343941;background:#1A1D21;color:#E7E4DD;border-radius:6px;padding:0 12px;font:inherit;font-size:13px}
+.grp{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7C8188;padding:14px 12px 6px;display:flex;justify-content:space-between}
+.item{display:flex;align-items:center;min-height:36px;padding:0 12px;border-radius:6px;color:#C9C6BF;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px}
+.item:hover{background:#1C2024;color:#E7E4DD}
+.item.on{background:#24292F;color:#FFFFFF}
+.doc{font-family:'IBM Plex Serif',Georgia,serif;font-size:15px;line-height:1.65;color:#DAD6CE}
+.doc h2{font-family:'IBM Plex Sans',sans-serif;font-size:16px;font-weight:600;margin:0;color:#F2EFE8}
+.doc p{margin:0}
+.doc ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.doc code{font-family:'IBM Plex Mono',monospace;font-size:13px;background:#1F2328;border-radius:4px;padding:1px 5px;color:#E7E4DD}
+.fm td{padding:6px 16px 6px 0;vertical-align:top;font-size:13px}
+.fm td:first-child{font-family:'IBM Plex Mono',monospace;color:#A0A4AB;white-space:nowrap}
+</style></head>
+<body>
+
+
+<div class="app" style="min-height: 900px; display: flex; flex-direction: column">
+<header class="topbar">
+<span class="brand">dima2</span>
+<nav aria-label="Main" style="display: flex; gap: 4px">
+<a class="nav" href="Main.html">Worktrees</a>
+<a class="nav on" href="Views.html" aria-current="page">Views</a>
+<a class="nav" href="#projects">Projects</a>
+</nav>
+</header>
+<main style="width: 100%; max-width: 1360px; margin: 0 auto; padding: 32px 40px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
+<h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em">Views</h1>
+<span style="color: #A0A4AB; font-size: 13px">What each project defines for its agents. Read-only.</span>
+<div style="flex: 1 1 0"></div>
+<label for="vp" style="font-size: 13px; color: #A0A4AB">Project</label>
+<select id="vp" class="ctl" style="min-width: 180px">
+<option>dima2</option>
+<option>thenn</option>
+<option>pocketlog</option>
+</select>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+<nav aria-label="Definitions" style="flex: 1 1 260px; max-width: 300px; border: 1px solid #262A30; border-radius: 8px; background: #14171A; padding: 4px 6px 10px; display: flex; flex-direction: column">
+<div class="grp"><span>Agents</span><span class="mono">.claude/agents</span></div>
+<a class="item on" href="#spec-reviewer">spec-reviewer</a>
+<a class="item" href="#test-writer">test-writer</a>
+<div class="grp"><span>Skills</span><span class="mono">.claude/skills</span></div>
+<a class="item" href="#write-spec">write-spec</a>
+<a class="item" href="#release-notes">release-notes</a>
+<div class="grp"><span>Commands</span><span class="mono">.claude/commands</span></div>
+<a class="item" href="#review">/review</a>
+<a class="item" href="#changelog">/changelog</a>
+<div class="grp"><span>Flows</span><span class="mono">.thenn</span></div>
+<a class="item" href="#spec-to-pr">spec-to-pr.thenn</a>
+<a class="item" href="#nightly">nightly.yaml</a>
+</nav>
+<article style="flex: 999 1 560px; min-width: 0; border: 1px solid #262A30; border-radius: 8px; background: #15181B; display: flex; flex-direction: column">
+<div style="display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid #22262B; flex-wrap: wrap">
+<span class="mono" style="font-size: 13px; color: #E7E4DD">.claude/agents/spec-reviewer.md</span>
+<span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: #A0A4AB; border: 1px solid #30343A; border-radius: 4px; padding: 2px 7px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>Read-only</span>
+</div>
+<div style="padding: 20px 28px 32px; display: flex; flex-direction: column; gap: 20px">
+<table class="fm" style="border-collapse: collapse">
+<tbody>
+<tr><td>name</td><td>spec-reviewer</td></tr>
+<tr><td>description</td><td>[DESCRIPTION FROM FRONTMATTER]</td></tr>
+<tr><td>tools</td><td class="mono" style="color: #C9C6BF">Read, Grep, Glob</td></tr>
+<tr><td>model</td><td class="mono" style="color: #C9C6BF">[MODEL]</td></tr>
+</tbody>
+</table>
+<div style="height: 1px; background: #22262B"></div>
+<div class="doc" style="display: flex; flex-direction: column; gap: 14px; max-width: 70ch">
+<h2>[First heading of the agent body]</h2>
+<p>[Rendered markdown body of the selected definition. Same renderer as the workspace preview, without the comment rail.]</p>
+<ul>
+<li>[List item]</li>
+<li>[List item with <code>inline code</code>]</li>
+</ul>
+</div>
+</div>
+</article>
+</div>
+</main>
+</div>
+
+
+
+
+</body></html>

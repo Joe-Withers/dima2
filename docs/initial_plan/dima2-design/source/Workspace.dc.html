@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>dima2 · Workspace · markdown review</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=IBM+Plex+Serif:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#121417}
+a{color:#8DBBEE}a:hover{color:#B5D3F5}
+.app{font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.45;color:#E7E4DD;background:#121417}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.topbar{height:44px;box-sizing:border-box;display:flex;align-items:center;gap:24px;padding:0 20px;border-bottom:1px solid #262A30;background:#0E1013}
+.brand{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:14px;color:#E7E4DD}
+.nav{display:inline-flex;align-items:center;height:44px;padding:0 12px;color:#A0A4AB;text-decoration:none;font-size:13px;font-weight:500;border-bottom:2px solid transparent;box-sizing:border-box}
+.nav:hover{color:#E7E4DD}
+.nav.on{color:#E7E4DD;border-bottom-color:#E8A33D}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:0 14px;border-radius:6px;border:1px solid #343941;background:#1A1D21;color:#E7E4DD;font:inherit;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap}
+.btn:hover{background:#22262B;color:#E7E4DD}
+.btn.primary{background:#E8A33D;border-color:#E8A33D;color:#1A1205}
+.btn.primary:hover{background:#F0B354;color:#1A1205}
+.iconbtn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:0;background:transparent;color:#A0A4AB;cursor:pointer;flex:none}
+.iconbtn:hover{background:#22262B;color:#E7E4DD}
+.phead{height:40px;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:0 12px 0 16px;border-bottom:1px solid #22262B;background:#16191C;flex:none}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#A0A4AB}
+.tree-row{display:flex;align-items:center;gap:8px;height:26px;padding-right:12px;font-size:13px;color:#C9C6BF;text-decoration:none;white-space:nowrap}
+.tree-row:hover{background:#1C2024;color:#E7E4DD}
+.tree-row.sel{background:#24292F;color:#FFFFFF}
+.tree-dir{display:flex;align-items:center;gap:6px;height:26px;font-size:12px;color:#7C8188;white-space:nowrap}
+.st{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;width:12px;text-align:center;flex:none}
+.st-A{color:#7FD1A6}.st-M{color:#8DBBEE}.st-D{color:#E89A8C}
+.fname{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis}
+.doc{font-family:'IBM Plex Serif',Georgia,serif;font-size:15px;line-height:1.65;color:#DAD6CE}
+.doc h1{font-family:'IBM Plex Sans',sans-serif;font-size:26px;font-weight:600;line-height:1.25;margin:0;color:#F2EFE8}
+.doc h2{font-family:'IBM Plex Sans',sans-serif;font-size:17px;font-weight:600;margin:0;color:#F2EFE8}
+.doc p{margin:0}
+.doc code{font-family:'IBM Plex Mono',monospace;font-size:13px;background:#1F2328;border-radius:4px;padding:1px 5px;color:#E7E4DD}
+.blk{position:relative;padding-left:40px}
+.mk{position:absolute;left:4px;top:3px;width:22px;height:22px;border-radius:50%;background:#E8A33D;color:#1A1205;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.mk.sent{background:#30343A;color:#A0A4AB}
+.hl{background:rgba(232,163,61,.16);color:inherit;border-bottom:1.5px solid #E8A33D;padding:0 1px}
+.hl.sent{background:transparent;border-bottom:1.5px dashed #5A5F66}
+.sel{background:rgba(108,166,232,.32);color:#FFFFFF;padding:0 1px}
+.fnode{padding:10px 14px;border:1px solid #3A4048;border-radius:6px;background:#1A1D21;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#E7E4DD;white-space:nowrap}
+.card{border:1px solid #2A2E34;border-radius:8px;background:#1A1D21;padding:12px;display:flex;flex-direction:column;gap:8px}
+.quote{font-family:'IBM Plex Serif',Georgia,serif;font-style:italic;font-size:13px;color:#A0A4AB;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ta{width:100%;box-sizing:border-box;border:1px solid #343941;background:#121417;color:#E7E4DD;border-radius:6px;padding:8px 10px;font:inherit;font-size:13px;resize:none}
+.tab{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;font-size:13px;color:#A0A4AB;border:0;border-right:1px solid #22262B;background:transparent;cursor:pointer;font-family:'IBM Plex Mono',monospace;box-sizing:border-box}
+.tab:hover{color:#E7E4DD;background:#171A1E}
+.tab.on{color:#E7E4DD;background:#0B0C0E;box-shadow:inset 0 2px 0 #E8A33D}
+.kbd{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#A0A4AB;border:1px solid #343941;border-radius:4px;padding:1px 5px}
+.term{font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.6;color:#D6D3CC;white-space:pre}
+</style>
+</helmet>
+<div class="app" style="height: 900px; display: flex; flex-direction: column; overflow: hidden">
+<header class="topbar">
+<span class="brand">dima2</span>
+<nav aria-label="Main" style="display: flex; gap: 4px">
+<a class="nav on" href="Main.dc.html">Worktrees</a>
+<a class="nav" href="Views.dc.html">Views</a>
+<a class="nav" href="#projects">Projects</a>
+</nav>
+</header>
+<div style="min-height: 52px; box-sizing: border-box; display: flex; align-items: center; gap: 16px; padding: 6px 12px 6px 16px; border-bottom: 1px solid #262A30; flex-wrap: wrap; flex: none">
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 6px; color: #A0A4AB; text-decoration: none; font-size: 13px; min-height: 36px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Worktrees</a>
+<span style="width: 1px; height: 20px; background: #30343A"></span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #6CA6E8"></span><span style="color: #A0A4AB">dima2</span><span style="color: #5A5F66">/</span><span class="mono" style="font-weight: 500">feat/comment-anchoring</span></span>
+<span class="mono" style="font-size: 12px; color: #A0A4AB">↑3 ↓0 vs origin/main</span>
+<span class="mono" style="font-size: 12px; color: #A0A4AB">14 files · <span style="color: #F0B354">3 md</span></span>
+<div style="flex: 1 1 0"></div>
+<button class="btn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v13H3zM3 7l2-3h14l2 3M9 12h6"></path></svg>Archive</button>
+</div>
+<div style="flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column">
+<section aria-label="Files" style="height: {{topH}}; display: flex; flex-direction: column; flex: none; overflow: hidden">
+<div style="display: flex; flex: none">
+<div class="phead" style="width: 280px; border-right: 1px solid #22262B"><span class="cap">Changes</span><span class="mono" style="font-size: 11px; color: #7C8188">14</span></div>
+<div class="phead" style="flex: 1 1 auto; min-width: 0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F0B354" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6v18h12V7z"></path><path d="M14 3v4h4"></path></svg><span class="mono" style="font-size: 12px; color: #E7E4DD; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">specs/003-comment-anchoring/spec.md</span><span class="mono st-A" style="font-size: 11px">A</span><span style="font-size: 11px; color: #7C8188; border: 1px solid #30343A; border-radius: 4px; padding: 1px 6px">Preview</span></div>
+</div>
+<sc-if value="{{topOpen}}" hint-placeholder-val="{{true}}">
+<div style="flex: 1 1 auto; min-height: 0; display: flex">
+<nav aria-label="Changed files" style="width: 280px; flex: none; border-right: 1px solid #22262B; overflow-y: auto; padding: 6px 0; background: #14171A">
+<sc-for list="{{tree}}" as="it" hint-placeholder-count="14">
+<sc-if value="{{it.folder}}" hint-placeholder-val="{{false}}"><div class="tree-dir" style="{{it.pad}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>{{it.name}}</div></sc-if>
+<sc-if value="{{it.file}}" hint-placeholder-val="{{true}}"><a class="tree-row {{it.selCls}}" href="{{it.href}}" style="{{it.pad}}"><span class="fname" style="color: {{it.nameColor}}">{{it.name}}</span><span class="st st-{{it.st}}">{{it.st}}</span></a></sc-if>
+</sc-for>
+</nav>
+<div style="flex: 1 1 auto; min-width: 0; display: flex">
+<article class="doc" style="flex: 1 1 auto; min-width: 0; overflow-y: auto; padding: 28px 40px 48px 24px; display: flex; flex-direction: column; gap: 16px">
+<div class="blk"><h1>Comment anchoring</h1></div>
+<div class="blk"><h2>Problem</h2></div>
+<div class="blk"><span class="mk sent" aria-label="Comment 1, sent">1</span><p>Review comments must survive edits elsewhere in the file. <mark class="hl sent">Line numbers drift whenever the agent rewrites an earlier section</mark>, and quoted-text search breaks on small wording changes.</p></div>
+<div class="blk"><h2>Approach</h2></div>
+<div class="blk"><span class="mk" aria-label="Comment 2">2</span><p>The preview renderer stamps a stable <code>data-block-id</code> on each heading, paragraph and list item at render time. <mark class="hl">A comment stores (file_path, block_id, body, created_at, sent_at).</mark></p></div>
+<div class="blk" style="padding-top: 4px; padding-bottom: 4px">
+<figure style="margin: 0; border: 1px solid #262A30; border-radius: 8px; background: #15181B; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<div class="fnode">remark plugin</div>
+<svg width="28" height="12" viewBox="0 0 28 12" fill="none" stroke="#7C8188" stroke-width="1.6" aria-hidden="true"><path d="M0 6h24M19 1l6 5-6 5"></path></svg>
+<div class="fnode">block ids</div>
+<svg width="28" height="12" viewBox="0 0 28 12" fill="none" stroke="#7C8188" stroke-width="1.6" aria-hidden="true"><path d="M0 6h24M19 1l6 5-6 5"></path></svg>
+<div class="fnode" style="border-color: #6B5226">comment rail</div>
+<svg width="28" height="12" viewBox="0 0 28 12" fill="none" stroke="#7C8188" stroke-width="1.6" aria-hidden="true"><path d="M0 6h24M19 1l6 5-6 5"></path></svg>
+<div class="fnode">PTY session</div>
+</div>
+<figcaption class="mono" style="font-size: 11px; color: #7C8188">mermaid · flowchart LR</figcaption>
+</figure>
+</div>
+<div class="blk"><h2>Failure modes</h2></div>
+<div class="blk"><span class="mk" aria-label="Comment 3">3</span><p>If the block itself is edited, its id changes and the comment is flagged "block not found". <mark class="hl">If the block is removed, the comment stays in history, unanchored.</mark></p></div>
+<div class="blk" style="padding-bottom: 150px">
+<p>Comments are never deleted on send. <mark class="sel">They're marked sent with a timestamp and stay resolvable</mark>, so each file keeps a review history.</p>
+<div role="dialog" aria-label="New comment" style="position: absolute; left: 40px; top: 58px; width: 340px; background: #1F2328; border: 1px solid #3A4048; border-radius: 8px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45); padding: 10px; display: flex; flex-direction: column; gap: 8px; font-family: 'IBM Plex Sans', sans-serif">
+<label for="newc" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Comment on selection</label>
+<textarea id="newc" class="ta" rows="2">Does "resolvable" mean a separate resolved_at column?</textarea>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><button class="btn" type="button" style="min-height: 32px">Cancel</button><button class="btn primary" type="button" style="min-height: 32px">Add comment</button></div>
+</div>
+</div>
+</article>
+<aside aria-label="Comments" style="width: 340px; flex: none; border-left: 1px solid #22262B; background: #14171A; display: flex; flex-direction: column; min-height: 0">
+<div style="flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline; justify-content: space-between"><span class="cap">Comments</span><span style="font-size: 12px; color: #7C8188">2 unsent · 1 sent</span></div>
+<div class="card">
+<div style="display: flex; align-items: center; gap: 8px"><span class="mk" style="position: static">2</span><span class="quote" style="flex: 1 1 auto; min-width: 0">A comment stores (file_path, block_id, …)</span><button class="iconbtn" type="button" aria-label="Resolve comment 2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></button></div>
+<p style="margin: 0; font-size: 13px; color: #E7E4DD">Add project + branch to the key, otherwise two repos with the same spec path collide.</p>
+<span style="font-size: 11px; color: #F0B354">Not sent</span>
+</div>
+<div class="card">
+<div style="display: flex; align-items: center; gap: 8px"><span class="mk" style="position: static">3</span><span class="quote" style="flex: 1 1 auto; min-width: 0">If the block is removed, the comment stays…</span><button class="iconbtn" type="button" aria-label="Resolve comment 3"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></button></div>
+<p style="margin: 0; font-size: 13px; color: #E7E4DD">Show unanchored comments in their own group at the bottom of this rail.</p>
+<span style="font-size: 11px; color: #F0B354">Not sent</span>
+</div>
+<div class="card" style="background: transparent; border-style: dashed">
+<div style="display: flex; align-items: center; gap: 8px"><span class="mk sent" style="position: static">1</span><span class="quote" style="flex: 1 1 auto; min-width: 0">Line numbers drift whenever the agent…</span></div>
+<p style="margin: 0; font-size: 13px; color: #A0A4AB">Mention the file-rename case too.</p>
+<span style="font-size: 11px; color: #7C8188">Sent to session 1 · 16:42</span>
+</div>
+</div>
+<div style="flex: none; border-top: 1px solid #22262B; padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px">
+<label for="extra" style="font-size: 12px; font-weight: 600; color: #C9C6BF">Additional context</label>
+<textarea id="extra" class="ta" rows="2" placeholder="Anything not tied to a passage"></textarea>
+<button class="btn primary" type="button" style="width: 100%; min-height: 40px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"></path></svg>Send 2 comments to session 1</button>
+</div>
+</aside>
+</div>
+</div>
+</sc-if>
+</section>
+<div aria-hidden="true" style="height: 6px; flex: none; background: #0E1013; border-top: 1px solid #262A30; border-bottom: 1px solid #262A30; display: flex; align-items: center; justify-content: center; cursor: row-resize"><span style="width: 36px; height: 2px; border-radius: 2px; background: #3A4048"></span></div>
+<section aria-label="Terminal sessions" style="height: {{bottomH}}; flex: none; display: flex; flex-direction: column; background: #0B0C0E; overflow: hidden">
+<div style="height: 40px; flex: none; display: flex; align-items: stretch; background: #121417; border-bottom: 1px solid #22262B">
+<div role="tablist" aria-label="Sessions" style="display: flex; align-items: stretch; min-width: 0; overflow-x: auto">
+<button class="tab on" type="button" role="tab" aria-selected="true"><span style="width: 7px; height: 7px; border-radius: 50%; background: #F0B354"></span>1 · claude</button>
+<button class="tab" type="button" role="tab" aria-selected="false"><span style="width: 7px; height: 7px; border-radius: 50%; background: #5A5F66"></span>2 · bash</button>
+</div>
+<button class="iconbtn" type="button" aria-label="New session" style="align-self: center; margin-left: 4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+<div style="flex: 1 1 0"></div>
+<div style="display: flex; align-items: center; gap: 4px; padding-right: 8px">
+<button class="iconbtn" type="button" onClick="{{growTop}}" aria-label="Give more room to files (Ctrl+Up)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 14l6-6 6 6"></path></svg></button>
+<span class="kbd">Ctrl ↑</span>
+<button class="iconbtn" type="button" onClick="{{growBottom}}" aria-label="Give more room to terminal (Ctrl+Down)" style="margin-left: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 10l6 6 6-6"></path></svg></button>
+<span class="kbd">Ctrl ↓</span>
+</div>
+</div>
+<sc-if value="{{bottomOpen}}" hint-placeholder-val="{{true}}">
+<div class="term" style="flex: 1 1 auto; min-height: 0; overflow: auto; padding: 12px 16px"><span style="color: #7FD1A6">~/code/dima2/.worktrees/feat-comment-anchoring</span> <span style="color: #7C8188">$</span> claude
+<span style="color: #7C8188">›</span> write a spec for anchoring review comments in the markdown preview
+
+  Wrote specs/003-comment-anchoring/spec.md   <span style="color: #7C8188">(64 lines)</span>
+  Wrote specs/003-comment-anchoring/plan.md   <span style="color: #7C8188">(41 lines)</span>
+  Wrote specs/003-comment-anchoring/research.md <span style="color: #7C8188">(28 lines)</span>
+
+  Draft ready for review. Reply with changes, or say "continue" to plan.
+
+<span style="color: #7C8188">›</span> <span style="background: #D6D3CC; color: #0B0C0E"> </span></div>
+</sc-if>
+</section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"layout":{"editor":"enum","options":["balanced","top-max","bottom-max"],"default":"balanced"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const order = ['bottom-max', 'balanced', 'top-max'];
+    const fromProp = this.props.layout ?? 'balanced';
+    const layout = (this.state && this.state.layout) || fromProp;
+    const i = Math.max(0, order.indexOf(layout));
+    const H = { 'balanced': [458, 340], 'top-max': [758, 40], 'bottom-max': [40, 758] }[order[i]];
+    const pad = (n) => 'padding-left: ' + (14 + n * 14) + 'px';
+    const D = (name, n) => ({ folder: true, file: false, name, pad: pad(n) });
+    const F = (name, st, n, sel) => {
+      const md = /\.md$/.test(name);
+      return {
+        folder: false, file: true, name, st, pad: pad(n),
+        selCls: sel ? 'sel' : '',
+        nameColor: md ? '#F0C27A' : 'inherit',
+        href: md ? 'Workspace.dc.html' : 'WorkspaceDiff.dc.html'
+      };
+    };
+    return {
+      topH: H[0] + 'px',
+      bottomH: H[1] + 'px',
+      topOpen: H[0] > 40,
+      bottomOpen: H[1] > 40,
+      growTop: () => this.setState({ layout: order[Math.min(2, i + 1)] }),
+      growBottom: () => this.setState({ layout: order[Math.max(0, i - 1)] }),
+      tree: [
+        D('specs/003-comment-anchoring', 0),
+        F('spec.md', 'A', 1, true),
+        F('plan.md', 'A', 1),
+        F('research.md', 'A', 1),
+        D('backend/dima2', 0),
+        F('comments.py', 'M', 1),
+        F('db.py', 'M', 1),
+        F('migrations/004_comments.sql', 'A', 1),
+        D('frontend/src', 0),
+        F('review/MarkdownPreview.tsx', 'A', 1),
+        F('review/CommentRail.tsx', 'A', 1),
+        F('review/blockIds.ts', 'A', 1),
+        F('review/review.css', 'A', 1),
+        F('terminal/SessionTabs.tsx', 'M', 1),
+        F('api/comments.ts', 'A', 1),
+        D('tests', 0),
+        F('test_comments.py', 'A', 1),
+        F('test_block_ids.py', 'A', 1)
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
