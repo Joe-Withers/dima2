@@ -156,9 +156,9 @@ a { color: #8dbbee; }
 .actions { display: flex; justify-content: flex-end; gap: 8px; }
 
 .tabbar { height: 40px; flex: none; display: flex; align-items: stretch; background: var(--bg); border-bottom: 1px solid #22262b; }
-.tabs { display: flex; align-items: stretch; min-width: 0; overflow-x: auto; }
+.tabs { display: flex; align-items: stretch; min-width: 0; overflow-x: auto; overflow-y: hidden; }
 .tabbar > .iconbtn { align-self: center; margin-left: 4px; }
-.tab { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 10px 0 14px; border: 0; border-right: 1px solid #22262b; background: transparent; color: var(--muted); font: 13px "IBM Plex Mono", monospace; cursor: pointer; }
+.tab { display: inline-flex; align-items: center; gap: 8px; height: 100%; padding: 0 10px 0 14px; border: 0; border-right: 1px solid #22262b; background: transparent; color: var(--muted); font: 13px "IBM Plex Mono", monospace; cursor: pointer; }
 .tab:hover { color: var(--text); background: #171a1e; }
 .tab.on { color: var(--text); background: #0b0c0e; box-shadow: inset 0 2px 0 var(--accent); }
 .tab .dot { width: 7px; height: 7px; border-radius: 50%; }
