@@ -30,6 +30,7 @@ def scan(root: Path, scope: str = "project") -> list[dict]:
         {"group": group, "name": entry_name(group, root, f), "path": str(f.relative_to(root)), "scope": scope}
         for group, directory, pattern in SOURCES
         for f in sorted((root / directory).glob(pattern))
+        if f.is_file()  # skips broken symlinks, which glob still lists
     ]
 
 

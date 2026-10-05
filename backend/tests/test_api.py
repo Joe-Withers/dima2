@@ -143,6 +143,8 @@ def test_views(client, repo):
     (repo / ".claude" / "agents" / "rev.md").write_text("---\nname: rev\ntools: Read, Grep\n---\n# Body\n")
     (repo / ".claude" / "skills" / "write").mkdir(parents=True)
     (repo / ".claude" / "skills" / "write" / "SKILL.md").write_text("no frontmatter")
+    (repo / ".claude" / "commands").mkdir()
+    (repo / ".claude" / "commands" / "gone.md").symlink_to(repo / "missing.md")
     views = client.get(f"/api/projects/{p['id']}/views").json()
     assert [(v["group"], v["name"]) for v in views] == [("Agents", "rev"), ("Skills", "write")]
     f = client.get(f"/api/projects/{p['id']}/views/file", params={"path": views[0]["path"]}).json()
