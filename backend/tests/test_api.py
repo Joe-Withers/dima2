@@ -18,6 +18,8 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("DIMA2_DB", str(tmp_path / "db" / "test.db"))
     monkeypatch.setenv("TMUX_TMPDIR", str(tmp_path))  # private tmux server, never touches the user's sessions
     monkeypatch.delenv("TMUX", raising=False)
+    (tmp_path / "home").mkdir()
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))  # global views would otherwise list the user's ~/.claude
     with TestClient(app) as c:
         yield c
     subprocess.run(["tmux", "kill-server"], capture_output=True)
