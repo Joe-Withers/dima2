@@ -26,6 +26,11 @@ def client(tmp_path, monkeypatch):
     subprocess.run(["tmux", "kill-server"], capture_output=True)
 
 
+def worktrees(client):
+    """The listed worktrees, leaving out each project's main checkout."""
+    return [w for w in client.get("/api/worktrees").json() if not w.get("main")]
+
+
 @pytest.fixture
 def repo(tmp_path):
     root = tmp_path / "repo"
@@ -50,7 +55,7 @@ def test_worktree_lifecycle(client, repo):
     (wt / "spec.md").write_text("# spec")
     (wt / "b.txt").write_text("b")
 
-    [row] = client.get("/api/worktrees").json()
+    [row] = worktrees(client)
     assert (row["project"], row["branch"], row["files"], row["md_files"]) == ("repo", "feat/x", 2, 1)
     assert (row["ahead"], row["behind"]) == (0, 0)
 
@@ -62,7 +67,7 @@ def test_worktree_lifecycle(client, repo):
     sh(wt, "git", "commit", "-m", "work")
     assert client.post(f"/api/worktrees/{row['id']}/archive").status_code == 204
     assert not wt.exists()
-    [row] = client.get("/api/worktrees").json()
+    [row] = worktrees(client)
     assert row["archived_at"] is not None
 
 
@@ -100,10 +105,38 @@ def test_detail_diff_and_content(client, worktree):
 def test_worktree_removed_outside_dima2(client, worktree, repo):
     id, wt = worktree
     sh(repo, "git", "worktree", "remove", str(wt))
-    r = client.get("/api/worktrees")
-    assert r.status_code == 200
-    [row] = r.json()
+    assert client.get("/api/worktrees").status_code == 200
+    [row] = worktrees(client)
     assert row["id"] == id and row["archived_at"] is not None
+
+
+def test_main_checkout(client, repo):
+    p = client.post("/api/projects", json={"name": "repo", "root_path": str(repo)}).json()
+    client.post("/api/worktrees", json={"project_id": p["id"], "branch": "feat/x", "base_ref": "main"})
+    main, feat = client.get("/api/worktrees").json()
+    assert (main["main"], main["branch"], main["files"]) == (True, "main", 0)
+    assert (feat["main"], feat["branch"]) == (False, "feat/x")
+
+    # changes are the uncommitted ones; the branch shown is whatever is checked out
+    (repo / "a.txt").write_text("edited")
+    sh(repo, "git", "checkout", "-b", "other")
+    [main] = [w for w in client.get("/api/worktrees").json() if w["main"]]
+    assert (main["branch"], main["files"]) == ("other", 1)
+    detail = client.get(f"/api/worktrees/{main['id']}").json()
+    assert detail["main"] and detail["files"] == [{"path": "a.txt", "status": "M"}]
+
+    assert client.post(f"/api/worktrees/{main['id']}/archive").status_code == 400
+    assert repo.is_dir()
+
+
+def test_main_checkout_without_commits(client, tmp_path):
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    sh(empty, "git", "init", "-b", "trunk")
+    client.post("/api/projects", json={"name": "empty", "root_path": str(empty)})
+    [main] = client.get("/api/worktrees").json()
+    assert (main["main"], main["branch"], main["files"]) == (True, "trunk", 0)
+    assert client.get(f"/api/worktrees/{main['id']}").status_code == 200
 
 
 def test_all_files(client, worktree):
@@ -122,7 +155,7 @@ def test_session_terminal_and_send(client, worktree):
     session = client.post(f"/api/worktrees/{id}/sessions").json()["id"]
     [listed] = client.get(f"/api/worktrees/{id}/sessions").json()
     assert listed["alive"]
-    assert client.get("/api/worktrees").json()[0]["sessions"] == 1
+    assert worktrees(client)[0]["sessions"] == 1
 
     with client.websocket_connect(f"/api/sessions/{session}/ws") as ws:
         ws.send_text('{"resize": [100, 30]}')
@@ -210,7 +243,7 @@ def test_agent_hooks_drive_status(client, worktree):
     assert ".claude" not in subprocess.run(["git", "status", "--porcelain"], cwd=wt, capture_output=True, text=True).stdout
 
     def row():
-        return client.get("/api/worktrees").json()[0]
+        return worktrees(client)[0]
 
     post_hook(client, session, "PermissionRequest")
     assert row()["status"] == "needs_input"

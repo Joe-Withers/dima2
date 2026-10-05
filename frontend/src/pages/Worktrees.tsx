@@ -6,7 +6,7 @@ import NewWorktreeDialog from "../NewWorktreeDialog";
 import Page from "../Page";
 import { projectColor } from "../projectColor";
 import { timeAgo } from "../timeAgo";
-import { Archive } from "../workspace/icons";
+import { Archive, Home } from "../workspace/icons";
 import { useAttentionCount, useWorktrees } from "../useWorktrees";
 
 export default function Worktrees() {
@@ -29,7 +29,7 @@ export default function Worktrees() {
   const [creating, setCreating] = useState(false);
 
   const all = worktrees.data ?? [];
-  const active = all.filter((w) => !w.archived_at && !w.unmanaged);
+  const active = all.filter((w) => !w.archived_at && !w.unmanaged && !w.main);
   const projectNames = [...new Set(all.map((w) => w.project))].sort();
   const visible = all.filter(
     (w) =>
@@ -70,7 +70,13 @@ export default function Worktrees() {
               <tr key={w.unmanaged ? `u:${w.path}` : w.id} className={w.archived_at || w.unmanaged ? "archived" : undefined}>
                 <td><span className="swatch" style={{ background: projectColor(w.project) }} />{w.project}</td>
                 <td className="mono">
-                  {w.unmanaged ? <>{w.branch}<span className="muted"> · not tracked</span></> : w.archived_at ? <>{w.branch}<span className="muted"> · archived</span></> : <Link className="branch" to={`/worktrees/${w.id}`}>{w.branch}</Link>}
+                  {w.unmanaged ? <>{w.branch}<span className="muted"> · not tracked</span></> : w.archived_at ? <>{w.branch}<span className="muted"> · archived</span></> : (
+                    <Link className="branch" to={`/worktrees/${w.id}`}>
+                      {w.main && <span className="main-mark" title="Main checkout: work directly in the project folder, not a worktree"><Home /></span>}
+                      {w.branch}
+                    </Link>
+                  )}
+                  {w.main && !w.archived_at && <span className="muted"> · main checkout</span>}
                   {w.done && <span className="badge">done</span>}
                 </td>
                 <td>
@@ -84,13 +90,13 @@ export default function Worktrees() {
                 <td className="mono">
                   {!w.unmanaged && <>{w.files} files{w.md_files > 0 && <span className="accent"> · {w.md_files} md</span>}</>}
                 </td>
-                <td className="mono muted">{!w.unmanaged && <>↑{w.ahead} ↓{w.behind}</>}</td>
+                <td className="mono muted">{!w.unmanaged && !w.main && <>↑{w.ahead} ↓{w.behind}</>}</td>
                 <td className="muted">{!w.unmanaged && timeAgo(w.last_activity)}</td>
                 <td style={{ textAlign: "right" }}>
                   {w.unmanaged && (
                     <button className="iconbtn plus" aria-label={`Track ${w.branch}`} title="Track in dima2" onClick={() => adopt.mutate({ project_id: w.project_id, branch: w.branch, path: w.path! })}>+</button>
                   )}
-                  {!w.archived_at && !w.unmanaged && (
+                  {!w.archived_at && !w.unmanaged && !w.main && (
                     <button className="iconbtn" aria-label={`Archive ${w.branch}`} title="Archive" onClick={() => confirm(`Archive ${w.branch}? This removes its folder.`) && archive.mutate(w.id)}>
                       <Archive />
                     </button>

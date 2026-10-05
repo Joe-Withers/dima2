@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS worktrees (
     base_ref TEXT NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     archived_at INTEGER,
-    UNIQUE (project_id, branch)
+    UNIQUE (project_id, branch)  -- branch '' is the project's main checkout, whatever it has checked out
+
 );
 CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY,

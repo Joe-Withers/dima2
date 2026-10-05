@@ -13,5 +13,6 @@ export const Send = svg("M4 12l16-8-6 16-2.5-6.5z", 15);
 export const Close = svg("M6 6l12 12M18 6L6 18", 18);
 export const Folder = svg("M3 6h6l2 2h10v11H3z", 18);
 export const Trash = svg("M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3", 18);
+export const Home = svg("M4 11l8-6.5 8 6.5M6 9.5V19h12V9.5", 14);
 export const Archive = svg("M3 5h18v4H3zM5 9v10h14V9M10 13h4", 18);
 export const Pencil = svg("M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4", 14);

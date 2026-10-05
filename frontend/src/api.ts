@@ -18,6 +18,8 @@ export type Worktree = {
   status: Status;
   /** An agent finished its turn and the worktree hasn't been opened since. */
   done: boolean;
+  /** The project's own checkout rather than a worktree: `branch` is whatever it has checked out, changes are uncommitted ones. */
+  main: boolean;
   /** Exists in git but has no dima2 record yet; `path` is set only for these. */
   unmanaged?: boolean;
   path?: string;
@@ -33,6 +35,7 @@ export type WorktreeDetail = {
   branch: string;
   base_ref: string;
   archived_at: number | null;
+  main: boolean;
   ahead: number;
   behind: number;
   files: ChangedFile[];

@@ -9,6 +9,8 @@ from .. import db, git, tmux
 
 router = APIRouter()
 
+MAIN = ""  # branch of the row for a project's main checkout: worked in directly, diffed against its own HEAD
+
 
 class WorktreeIn(BaseModel):
     project_id: int
@@ -51,15 +53,37 @@ def mark_archived(conn: sqlite3.Connection, id: int) -> None:
     conn.execute("UPDATE worktrees SET archived_at = unixepoch() WHERE id = ?", (id,))
 
 
+def ensure_main_checkouts(conn: sqlite3.Connection) -> None:
+    """Every project has a row for its main checkout (revived if its folder comes back after being archived)."""
+    for p in conn.execute("SELECT id, root_path FROM projects").fetchall():
+        if Path(p["root_path"]).is_dir():
+            conn.execute(
+                "INSERT INTO worktrees (project_id, branch, path, base_ref) VALUES (?, ?, ?, 'HEAD') "
+                "ON CONFLICT (project_id, branch) DO UPDATE SET path = excluded.path, archived_at = NULL",
+                (p["id"], MAIN, p["root_path"]),
+            )
+
+
+def describe(r: sqlite3.Row) -> dict:
+    """Fields shared by the list and the detail view; a main checkout shows the branch it has checked out now."""
+    item = {k: r[k] for k in ("id", "project_id", "project", "branch", "base_ref", "created_at", "archived_at")}
+    item["main"] = r["branch"] == MAIN
+    if item["main"] and r["archived_at"] is None:
+        item["branch"] = git.current_branch(r["path"])
+    return item
+
+
 @router.get("/worktrees")
 def list_worktrees():
     with db.connect() as conn:
+        ensure_main_checkouts(conn)
         # A worktree whose folder was removed outside dima2 is as good as archived; git can't run in it any more.
         for r in conn.execute("SELECT id, path FROM worktrees WHERE archived_at IS NULL").fetchall():
             if not Path(r["path"]).is_dir():
                 mark_archived(conn, r["id"])
         rows = conn.execute(
-            "SELECT w.*, p.name AS project FROM worktrees w JOIN projects p ON p.id = w.project_id ORDER BY w.created_at DESC"
+            "SELECT w.*, p.name AS project FROM worktrees w JOIN projects p ON p.id = w.project_id "
+            "ORDER BY w.branch = '' DESC, w.created_at DESC"  # main checkouts first
         ).fetchall()
         session_rows = conn.execute("SELECT id, worktree_id, agent_state FROM sessions").fetchall()
     live = tmux.states()
@@ -70,14 +94,18 @@ def list_worktrees():
             for s in session_rows
             if s["worktree_id"] == r["id"]
         ]
-        item = {k: r[k] for k in ("id", "project_id", "project", "branch", "base_ref", "created_at", "archived_at")}
+        item = describe(r)
         item.update(files=0, md_files=0, ahead=0, behind=0, last_activity=r["created_at"], sessions=0, status="idle", done=False)
         if r["archived_at"] is None:
-            files = git.changed_files(r["path"], r["base_ref"])
-            item["files"] = len(files)
-            item["md_files"] = sum(f.endswith(".md") for f in files)
-            item["ahead"], item["behind"] = git.ahead_behind(r["path"], r["base_ref"])
-            item["last_activity"] = max([git.last_activity(r["path"]), *(s["activity"] for s in sessions)])
+            item["last_activity"] = max([r["created_at"], *(s["activity"] for s in sessions)])
+            try:
+                files = git.changed_files(r["path"], r["base_ref"])
+                item["files"] = len(files)
+                item["md_files"] = sum(f.endswith(".md") for f in files)
+                item["ahead"], item["behind"] = git.ahead_behind(r["path"], r["base_ref"])
+                item["last_activity"] = max(item["last_activity"], git.last_activity(r["path"]))
+            except git.GitError:
+                pass  # e.g. a main checkout with no commits yet: show the row without stats rather than fail the list
             item["sessions"] = len(sessions)
             item["status"] = session_status(sessions)
             item["done"] = item["status"] != "needs_input" and any(s["alive"] and s["agent_state"] == "done" for s in sessions)
@@ -158,11 +186,14 @@ def create_worktree(body: WorktreeIn):
 def get_worktree(id: int):
     with db.connect() as conn:
         w = load(conn, id)
-    detail = {k: w[k] for k in ("id", "project_id", "project", "branch", "base_ref", "archived_at")}
+    detail = describe(w)
     detail.update(files=[], ahead=0, behind=0)
     if w["archived_at"] is None:
-        detail["files"] = [{"path": p, "status": s} for p, s in sorted(git.changed_files(w["path"], w["base_ref"]).items())]
-        detail["ahead"], detail["behind"] = git.ahead_behind(w["path"], w["base_ref"])
+        try:
+            detail["files"] = [{"path": p, "status": s} for p, s in sorted(git.changed_files(w["path"], w["base_ref"]).items())]
+            detail["ahead"], detail["behind"] = git.ahead_behind(w["path"], w["base_ref"])
+        except git.GitError:
+            pass  # no commits yet: nothing to compare against
     return detail
 
 
@@ -170,6 +201,8 @@ def get_worktree(id: int):
 def archive_worktree(id: int):
     with db.connect() as conn:
         w = active(load(conn, id))
+        if w["branch"] == MAIN:
+            raise HTTPException(400, "the main checkout can't be archived")
         try:
             git.remove_worktree(w["root_path"], w["path"])
         except git.GitError as e:

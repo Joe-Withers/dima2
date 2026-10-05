@@ -88,10 +88,10 @@ export default function Workspace() {
           <span className="faint">/</span>
           <span className="mono strong">{w.branch}</span>
         </span>
-        <span className="mono muted small">↑{w.ahead} ↓{w.behind} vs {w.base_ref}</span>
+        {w.main ? <span className="muted small">main checkout · uncommitted changes</span> : <span className="mono muted small">↑{w.ahead} ↓{w.behind} vs {w.base_ref}</span>}
         <span className="mono muted small">{w.files.length} files{mdCount > 0 && <span className="accent"> · {mdCount} md</span>}</span>
         <span className="grow" />
-        <button className="btn" onClick={() => confirm(`Archive ${w.branch}? This removes its folder.`) && archive.mutate()}>Archive</button>
+        {!w.main && <button className="btn" onClick={() => confirm(`Archive ${w.branch}? This removes its folder.`) && archive.mutate()}>Archive</button>}
       </div>
 
       <div className="regions" ref={region}>

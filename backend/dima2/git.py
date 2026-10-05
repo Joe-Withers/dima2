@@ -98,6 +98,14 @@ def file_diff(path: str, base_ref: str, file: str) -> str:
     return result.stdout.strip()
 
 
+def current_branch(path: str) -> str:
+    """The checked-out branch (even before the first commit), or "HEAD" when detached."""
+    try:
+        return git(path, "symbolic-ref", "--short", "HEAD")
+    except GitError:
+        return "HEAD"
+
+
 def ahead_behind(path: str, base_ref: str) -> tuple[int, int]:
     behind, ahead = git(path, "rev-list", "--left-right", "--count", f"{base_ref}...HEAD").split()
     return int(ahead), int(behind)
