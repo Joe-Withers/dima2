@@ -40,8 +40,9 @@ COPY --chown=dima:dima backend/ backend/
 COPY --from=frontend --chown=dima:dima /app/frontend/dist frontend/dist
 
 RUN curl -fsSL https://claude.ai/install.sh | bash \
-    && mkdir -p /home/dima/.claude /home/dima/.dima2 /home/dima/projects
+    && mkdir -p /home/dima/.claude /home/dima/.dima2
 
 WORKDIR /app/backend
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# PROJECTS_DIR is mounted at its host path (git worktrees record absolute paths); link it where the folder picker opens.
+CMD ["sh", "-c", "[ -n \"$PROJECTS_DIR\" ] && ln -sfn \"$PROJECTS_DIR\" ~/projects; exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]

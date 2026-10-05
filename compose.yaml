@@ -7,8 +7,11 @@ services:
     ports:
       # dima2 hands out shell access: keep it on localhost unless you put auth in front of it.
       - "127.0.0.1:8000:8000"
+    environment:
+      PROJECTS_DIR: ${PROJECTS_DIR:-${HOME}/projects}
     volumes:
-      - ${PROJECTS_DIR:-~/projects}:/home/dima/projects
+      # Same path as on the host: git worktrees store absolute paths to each other.
+      - ${PROJECTS_DIR:-${HOME}/projects}:${PROJECTS_DIR:-${HOME}/projects}
       - dima2-data:/home/dima/.dima2
       - claude-config:/home/dima/.claude
       # Optional: reuse your host git identity and SSH keys for commits and pushes.
