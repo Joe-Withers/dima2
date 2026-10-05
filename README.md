@@ -1,4 +1,4 @@
-# dima2
+# <img src="frontend/public/dima2-icon.svg" alt="" width="48" align="center"> dima2
 
 A UI for git worktrees across your projects: a table of everything in flight, a diff / markdown-review
 workspace per worktree, and a detached tmux terminal per session. Review comments on a markdown file
