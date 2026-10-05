@@ -3,6 +3,7 @@ name = "dima2"
 version = "0.1.0"
 description = "A UI for git worktrees across your projects"
 requires-python = ">=3.12"
+license = "MIT"
 dependencies = ["fastapi>=0.115", "uvicorn[standard]>=0.30"]
 
 [project.scripts]
