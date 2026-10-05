@@ -20,6 +20,29 @@ Development: run uvicorn with `--reload` and `npm run dev` in `frontend/` (http:
 State lives in `~/.dima2/dima2.db` (override with `DIMA2_DB`). Sessions are tmux sessions named `dima2-<id>`,
 so they survive restarts of the backend and the browser.
 
+## Docker
+
+The image bundles the built frontend, the backend, git, tmux and Claude Code.
+
+```sh
+PROJECTS_DIR=~/code docker compose up -d --build   # http://localhost:8000
+docker compose exec dima2 claude                   # once, to log in to Claude Code
+```
+
+`PROJECTS_DIR` (default `~/projects`; create it first) is mounted at `~/projects` in the container, which is where
+the folder picker opens. The database and Claude Code's login live in named volumes, so they survive rebuilds.
+tmux sessions live inside the container and end when it stops. The container runs as uid 1000; if your host user
+differs, build with `--build-arg UID=$(id -u) --build-arg GID=$(id -g)`. To use your git identity and SSH keys,
+uncomment the two mounts in `compose.yaml`.
+
+To move it to another machine without a registry:
+
+```sh
+docker save dima2 | gzip > dima2.tar.gz      # here
+docker load < dima2.tar.gz                   # there, next to a copy of compose.yaml
+docker compose up -d
+```
+
 ## Agent status
 
 For Claude Code sessions, dima2 writes hooks into the worktree's `.claude/settings.local.json` (git-ignored

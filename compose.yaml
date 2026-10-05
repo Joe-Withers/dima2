@@ -1,0 +1,20 @@
+services:
+  dima2:
+    build: .
+    image: dima2
+    init: true
+    restart: unless-stopped
+    ports:
+      # dima2 hands out shell access: keep it on localhost unless you put auth in front of it.
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ${PROJECTS_DIR:-~/projects}:/home/dima/projects
+      - dima2-data:/home/dima/.dima2
+      - claude-config:/home/dima/.claude
+      # Optional: reuse your host git identity and SSH keys for commits and pushes.
+      # - ~/.gitconfig:/home/dima/.gitconfig:ro
+      # - ~/.ssh:/home/dima/.ssh:ro
+
+volumes:
+  dima2-data:
+  claude-config:
