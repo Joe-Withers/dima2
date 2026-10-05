@@ -3,6 +3,7 @@ import fcntl
 import json
 import os
 import pty
+import signal
 import struct
 import termios
 
@@ -124,6 +125,10 @@ async def attach(ws: WebSocket, id: int):
             elif message.get("text"):
                 size = json.loads(message["text"])["resize"]
                 resize(master, *size)
+                # tmux runs in its own session without this pty as its controlling terminal, so the kernel doesn't
+                # deliver SIGWINCH on resize; without it tmux keeps the old size until something else redraws.
+                if proc.returncode is None:
+                    proc.send_signal(signal.SIGWINCH)
     except WebSocketDisconnect:
         pass
     finally:

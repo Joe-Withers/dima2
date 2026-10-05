@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import time
 
 import pytest
 from fastapi.testclient import TestClient
@@ -139,6 +140,24 @@ def test_session_terminal_and_send(client, worktree):
 
     assert client.delete(f"/api/sessions/{session}").status_code == 204
     assert client.get(f"/api/worktrees/{id}/sessions").json() == []
+
+
+def test_terminal_resize_reaches_tmux(client, worktree):
+    id, _ = worktree
+    session = client.post(f"/api/worktrees/{id}/sessions").json()["id"]
+
+    def window_size():
+        out = subprocess.run(["tmux", "display", "-p", "-t", f"dima2-{session}", "#{window_width}x#{window_height}"], capture_output=True, text=True)
+        return out.stdout.strip()
+
+    with client.websocket_connect(f"/api/sessions/{session}/ws") as ws:
+        ws.receive_bytes()  # attached
+        for size in ([120, 20], [120, 45]):  # growing again is what used to be missed
+            ws.send_text(json.dumps({"resize": size}))
+            deadline = time.monotonic() + 5
+            while window_size() != f"{size[0]}x{size[1]}" and time.monotonic() < deadline:
+                time.sleep(0.05)
+            assert window_size() == f"{size[0]}x{size[1]}"
 
 
 def test_unsent_comment_delete(client, worktree):
