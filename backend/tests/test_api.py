@@ -96,6 +96,15 @@ def test_detail_diff_and_content(client, worktree):
     assert client.get(f"/api/worktrees/{id}/content", params={"path": "../../a.txt"}).status_code == 400
 
 
+def test_worktree_removed_outside_dima2(client, worktree, repo):
+    id, wt = worktree
+    sh(repo, "git", "worktree", "remove", str(wt))
+    r = client.get("/api/worktrees")
+    assert r.status_code == 200
+    [row] = r.json()
+    assert row["id"] == id and row["archived_at"] is not None
+
+
 def test_session_terminal_and_send(client, worktree):
     id, wt = worktree
     session = client.post(f"/api/worktrees/{id}/sessions").json()["id"]

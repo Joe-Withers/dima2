@@ -44,9 +44,20 @@ def session_status(sessions: list[dict]) -> str:
     return "exited" if sessions and not alive else "idle"
 
 
+def mark_archived(conn: sqlite3.Connection, id: int) -> None:
+    for s in conn.execute("SELECT id FROM sessions WHERE worktree_id = ?", (id,)):
+        tmux.kill(s["id"])
+    conn.execute("DELETE FROM sessions WHERE worktree_id = ?", (id,))
+    conn.execute("UPDATE worktrees SET archived_at = unixepoch() WHERE id = ?", (id,))
+
+
 @router.get("/worktrees")
 def list_worktrees():
     with db.connect() as conn:
+        # A worktree whose folder was removed outside dima2 is as good as archived; git can't run in it any more.
+        for r in conn.execute("SELECT id, path FROM worktrees WHERE archived_at IS NULL").fetchall():
+            if not Path(r["path"]).is_dir():
+                mark_archived(conn, r["id"])
         rows = conn.execute(
             "SELECT w.*, p.name AS project FROM worktrees w JOIN projects p ON p.id = w.project_id ORDER BY w.created_at DESC"
         ).fetchall()
@@ -163,10 +174,7 @@ def archive_worktree(id: int):
             git.remove_worktree(w["root_path"], w["path"])
         except git.GitError as e:
             raise HTTPException(400, str(e))
-        for s in conn.execute("SELECT id FROM sessions WHERE worktree_id = ?", (id,)):
-            tmux.kill(s["id"])
-        conn.execute("DELETE FROM sessions WHERE worktree_id = ?", (id,))
-        conn.execute("UPDATE worktrees SET archived_at = unixepoch() WHERE id = ?", (id,))
+        mark_archived(conn, id)
 
 
 def file_in_worktree(w: sqlite3.Row, file: str) -> Path:
