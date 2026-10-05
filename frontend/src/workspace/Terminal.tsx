@@ -1,8 +1,16 @@
+import { ClipboardAddon, IClipboardProvider } from "@xterm/addon-clipboard";
 import { FitAddon } from "@xterm/addon-fit";
 import { Unicode11Addon } from "@xterm/addon-unicode11";
 import { Terminal as XTerm } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
 import { useEffect, useRef } from "react";
+
+/** OSC 52 clipboard writes go to the browser clipboard whatever selection they name: tmux sends an empty one, which
+ * the addon's default provider ignores (it only takes "c"). Reads are refused so programs can't query the clipboard. */
+const clipboard: IClipboardProvider = {
+  readText: () => "",
+  writeText: (_selection, text) => navigator.clipboard.writeText(text).catch(() => {}),
+};
 
 const MIN_HEIGHT = 80; // don't resize the pty while the region is collapsed to its tab bar
 
@@ -24,6 +32,9 @@ export default function Terminal({ sessionId }: { sessionId: number }) {
     // default disagrees about some characters, so the cursor drifts and lines overwrite each other.
     term.loadAddon(new Unicode11Addon());
     term.unicode.activeVersion = "11";
+    // Dragging selects in tmux (its mouse mode is on); on release tmux copies and sends the text as an OSC 52
+    // escape, which this addon writes to the browser clipboard. Apps like Claude Code copy the same way.
+    term.loadAddon(new ClipboardAddon(undefined, clipboard));
     term.open(el);
     // The web font loads late; xterm measures cell width at open, so re-measure once it's in or columns drift.
     let disposed = false;
