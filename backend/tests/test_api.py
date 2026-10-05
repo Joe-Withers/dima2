@@ -105,6 +105,17 @@ def test_worktree_removed_outside_dima2(client, worktree, repo):
     assert row["id"] == id and row["archived_at"] is not None
 
 
+def test_all_files(client, worktree):
+    id, wt = worktree
+    (wt / "docs").mkdir()
+    (wt / "docs" / "new.md").write_text("# new")
+    (wt / "junk.log").write_text("x")
+    (wt / ".gitignore").write_text("*.log\n")
+    assert client.get(f"/api/worktrees/{id}/files").json() == [".gitignore", "a.txt", "docs/new.md"]
+    (wt / "a.txt").unlink()
+    assert client.get(f"/api/worktrees/{id}/files").json() == [".gitignore", "docs/new.md"]
+
+
 def test_session_terminal_and_send(client, worktree):
     id, wt = worktree
     session = client.post(f"/api/worktrees/{id}/sessions").json()["id"]

@@ -9,7 +9,8 @@ import { useComments } from "./useComments";
 type Props = {
   worktreeId: number;
   path: string;
-  status: FileStatus;
+  /** Unset for a file the branch hasn't changed. */
+  status?: FileStatus;
   /** Active terminal tab: its id and display name. */
   target: { id: number; name: string } | null;
   onOpenFile: (path: string) => void;

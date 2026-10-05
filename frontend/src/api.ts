@@ -93,6 +93,7 @@ export const api = {
     request<{ id: number }>("POST", "/api/worktrees", w),
   adoptWorktree: (body: { project_id: number; branch: string; path: string }) => request<{ id: number }>("POST", "/api/worktrees/adopt", body),
   archiveWorktree: (id: number) => request<void>("POST", `/api/worktrees/${id}/archive`),
+  files: (id: number) => request<string[]>("GET", `/api/worktrees/${id}/files`),
   diff: (id: number, path: string) => request<{ diff: string }>("GET", `/api/worktrees/${id}/diff?${q({ path })}`),
   content: (id: number, path: string) => fetch(contentUrl(id, path)).then((r) => r.text()),
 

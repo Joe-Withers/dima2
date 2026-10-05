@@ -185,6 +185,14 @@ def file_in_worktree(w: sqlite3.Row, file: str) -> Path:
     return full
 
 
+@router.get("/worktrees/{id}/files")
+def list_files(id: int):
+    """All files, for browsing beyond the changed ones; a deleted file that is still tracked is left out."""
+    with db.connect() as conn:
+        w = active(load(conn, id))
+    return [f for f in git.all_files(w["path"]) if (Path(w["path"]) / f).is_file()]
+
+
 @router.get("/worktrees/{id}/diff")
 def get_diff(id: int, path: str):
     with db.connect() as conn:

@@ -130,6 +130,9 @@ a { color: #8dbbee; }
 .dl-hunk { padding-left: 144px; margin-block: 6px; background: #181c22; color: #8dbbee; }
 .dl-add { background: #14261d; } .dl-add .sign, .dl-add .no:nth-child(3) { color: #7fd1a6; }
 .dl-del { background: #2a1a1a; } .dl-del .sign, .dl-del .no:nth-child(2) { color: var(--danger); }
+/* an unchanged file, shown whole: one line-number column, no signs */
+.diff.whole .dl { grid-template-columns: 28px 48px 1fr; }
+.diff.whole .dl .no:nth-child(2), .diff.whole .dl .sign { display: none; }
 
 .review { flex: 1; min-height: 0; display: flex; }
 .doc-scroll { flex: 1; min-width: 0; overflow-y: auto; padding: 28px 40px 48px 24px; }

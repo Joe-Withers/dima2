@@ -17,11 +17,21 @@ export default function Workspace() {
   const qc = useQueryClient();
   const [params, setParams] = useSearchParams();
   const selected = params.get("file");
+  const showAll = params.get("tree") === "all";
+  // Both live in the URL, so a reload keeps the open file and the tree mode.
+  const setView = (next: { file?: string | null; all?: boolean }) =>
+    setParams((p) => {
+      const file = next.file === undefined ? p.get("file") : next.file;
+      const all = next.all ?? p.get("tree") === "all";
+      return { ...(file ? { file } : {}), ...(all ? { tree: "all" } : {}) };
+    });
+  const openFile = (path: string) => setView({ file: path });
   const layout = useLayout();
   const region = useRef<HTMLDivElement>(null);
   const [chosenSession, setChosenSession] = useState<number | null>(null);
 
   const worktree = useQuery({ queryKey: ["worktree", id], queryFn: () => api.worktree(id), refetchInterval: 3000 });
+  const allFiles = useQuery({ queryKey: ["files", id], queryFn: () => api.files(id), enabled: showAll, refetchInterval: 10000 });
   const sessions = useQuery({ queryKey: ["sessions", id], queryFn: () => api.sessions(id), refetchInterval: 3000 });
   const refreshSessions = () => qc.invalidateQueries({ queryKey: ["sessions", id] });
 
@@ -47,7 +57,8 @@ export default function Workspace() {
 
   const list = sessions.data ?? [];
   const active = list.find((s) => s.id === chosenSession) ?? list[list.length - 1] ?? null;
-  const file = w.files.find((f) => f.path === selected);
+  // Any file can be open, changed or not; an unchanged one has no status.
+  const file = selected ? { path: selected, status: w.files.find((f) => f.path === selected)?.status } : null;
   const mdCount = w.files.filter((f) => f.path.endsWith(".md")).length;
   const target = active && { id: active.id, name: `session ${list.indexOf(active) + 1}` };
 
@@ -85,13 +96,20 @@ export default function Workspace() {
 
       <div className="regions" ref={region}>
         <section aria-label="Files" className="region top" style={{ flex: flex[0] }} onClick={layout.mode === "bottom" ? layout.restore : undefined}>
-          <div className="phead tree-head"><span className="cap">Changes</span><span className="mono faint small">{w.files.length}</span></div>
-          <FileTree files={w.files} selected={selected} onSelect={(path) => setParams({ file: path })} />
+          <div className="phead tree-head">
+            <div className="seg grow" role="group" aria-label="Files to show">
+              <button className={showAll ? "" : "on"} aria-pressed={!showAll} onClick={() => setView({ all: false })}>
+                Changes <span className="mono faint">{w.files.length}</span>
+              </button>
+              <button className={showAll ? "on" : ""} aria-pressed={showAll} onClick={() => setView({ all: true })}>All</button>
+            </div>
+          </div>
+          <FileTree files={w.files} all={showAll ? allFiles.data ?? [] : undefined} selected={selected} onSelect={openFile} />
           {file ? (
             file.path.endsWith(".md") && file.status !== "D" ? (
-              <ReviewPane key={file.path} worktreeId={id} path={file.path} status={file.status} target={target} onOpenFile={(path) => setParams({ file: path })} />
+              <ReviewPane key={file.path} worktreeId={id} path={file.path} status={file.status} target={target} onOpenFile={openFile} />
             ) : (
-              <DiffView key={file.path} worktreeId={id} path={file.path} status={file.status} target={target} onOpenFile={(path) => setParams({ file: path })} />
+              <DiffView key={file.path} worktreeId={id} path={file.path} status={file.status} target={target} onOpenFile={openFile} />
             )
           ) : (
             <div className="center">

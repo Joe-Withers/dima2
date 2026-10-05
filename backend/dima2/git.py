@@ -83,6 +83,11 @@ def changed_files(path: str, base_ref: str) -> dict[str, str]:
     return status
 
 
+def all_files(path: str) -> list[str]:
+    """Every file in the worktree that git tracks, plus untracked ones that aren't ignored."""
+    return sorted(set(git(path, "ls-files", "--cached", "--others", "--exclude-standard").splitlines()))
+
+
 def file_diff(path: str, base_ref: str, file: str) -> str:
     merge_base = git(path, "merge-base", base_ref, "HEAD")
     diff = git(path, "diff", "--no-color", merge_base, "--", file)

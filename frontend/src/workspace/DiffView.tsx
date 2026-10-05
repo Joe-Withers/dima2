@@ -31,6 +31,13 @@ export function parseDiff(diff: string): Line[] {
   return lines;
 }
 
+/** A whole file as context lines, so comments on it anchor ("new:<n>") the same way as in a diff. */
+function fileLines(text: string): Line[] {
+  const lines = text.split("\n");
+  if (lines[lines.length - 1] === "") lines.pop();
+  return lines.map((t, i) => ({ kind: "ctx", new: i + 1, text: t }));
+}
+
 const SIGN = { hunk: "", add: "+", del: "−", ctx: "" };
 
 /** Comments anchor to a diff line: "new:<n>" for lines in the new file, "old:<n>" for removed ones. */
@@ -40,7 +47,8 @@ const collapse = (text: string) => text.replace(/\s+/g, " ").trim();
 type Props = {
   worktreeId: number;
   path: string;
-  status: FileStatus;
+  /** Unset for a file the branch hasn't changed: it is shown whole, numbered like the new side of a diff. */
+  status?: FileStatus;
   /** Active terminal tab: its id and display name. */
   target: { id: number; name: string } | null;
   onOpenFile: (path: string) => void;
@@ -49,16 +57,18 @@ type Props = {
 type Draft = { key: string; quote: string; top: number };
 
 export default function DiffView({ worktreeId, path, status, target, onOpenFile }: Props) {
+  const unchanged = status === undefined;
   const { data } = useQuery({
-    queryKey: ["diff", worktreeId, path],
-    queryFn: () => api.diff(worktreeId, path),
+    queryKey: ["diff", worktreeId, path, unchanged],
+    queryFn: async () => (unchanged ? { diff: "", text: await api.content(worktreeId, path) } : { ...(await api.diff(worktreeId, path)), text: null }),
     refetchInterval: 3000,
   });
   const c = useComments(worktreeId, path, target);
   const inner = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [body, setBody] = useState("");
-  const lines = useMemo(() => (data ? parseDiff(data.diff) : []), [data]);
+  const binary = data?.text?.includes("\0") || data?.diff.includes("Binary");
+  const lines = useMemo(() => (!data || binary ? [] : data.text !== null ? fileLines(data.text) : parseDiff(data.diff)), [data, binary]);
   const added = lines.filter((l) => l.kind === "add").length;
   const removed = lines.filter((l) => l.kind === "del").length;
 
@@ -114,12 +124,16 @@ export default function DiffView({ worktreeId, path, status, target, onOpenFile 
   return (
     <div className="center">
       <PanelHeader path={path} status={status}>
-        <span className="mono st-A small">+{added}</span>
-        <span className="mono st-D small">−{removed}</span>
+        {!unchanged && (
+          <>
+            <span className="mono st-A small">+{added}</span>
+            <span className="mono st-D small">−{removed}</span>
+          </>
+        )}
       </PanelHeader>
       <div className="review">
-        <div className="diff mono">
-          {data && lines.length === 0 && <p className="empty">{data.diff.includes("Binary") ? "Binary file." : "No textual changes."}</p>}
+        <div className={`diff mono${unchanged ? " whole" : ""}`}>
+          {data && lines.length === 0 && <p className="empty">{binary ? "Binary file." : unchanged ? "Empty file." : "No textual changes."}</p>}
           <div className="diff-inner" ref={inner}>
             {lines.map((l, i) => {
               const key = lineKey(l);
