@@ -19,6 +19,18 @@ To upgrade, run the install command shown on the [latest release](https://github
 `dima2 --help` lists the options (`--host`, `--port`). It listens on localhost only by default, since its terminals
 give shell access.
 
+### Open it as an app
+
+With dima2 running, Chrome and Edge can install the page as an app with its own window and taskbar/dock icon:
+
+- **Chrome:** ⋮ menu → *Cast, save and share* → *Install page as app…* (older versions: *More tools* → *Create
+  shortcut…* → tick *Open as window*)
+- **Edge:** ⋯ menu → *Apps* → *Install this site as an app*
+
+The app is just a window onto the server, so `dima2` still has to be running, and it is tied to the address it was
+installed from: install it again if you change `--port`. On WSL, install it from the Windows browser; `localhost`
+is forwarded.
+
 State lives in `~/.dima2/dima2.db` (override with `DIMA2_DB`). Sessions are tmux sessions named `dima2-<id>`,
 so they survive restarts of the backend and the browser.
 
