@@ -1,8 +1,21 @@
 [project]
 name = "dima2"
 version = "0.1.0"
+description = "A UI for git worktrees across your projects"
 requires-python = ">=3.12"
 dependencies = ["fastapi>=0.115", "uvicorn[standard]>=0.30"]
+
+[project.scripts]
+dima2 = "dima2.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["dima2"]
+# The built frontend, copied in by the release workflow; git-ignored, so it has to be listed explicitly.
+artifacts = ["dima2/static/**"]
 
 [dependency-groups]
 dev = ["pytest>=8", "httpx>=0.27"]

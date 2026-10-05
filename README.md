@@ -6,44 +6,35 @@ can be sent straight into the active terminal session.
 
 Design reference: `docs/initial_plan/` (brainstorm + UI mockups).
 
-## Run
+## Install
 
-Needs Python 3.12 (with [uv](https://docs.astral.sh/uv/)), Node 18+, git and tmux.
+Needs [uv](https://docs.astral.sh/uv/), git, tmux and curl (Linux or macOS; on Windows, use WSL). Download the wheel
+from the latest [release](https://github.com/Joe-Withers/dima2/releases) and install it as a tool:
 
 ```sh
-cd frontend && npm install && npm run build   # once, and after frontend changes
-cd backend && uv run uvicorn app.main:app     # http://localhost:8000
+d=$(mktemp -d) && gh release download --repo Joe-Withers/dima2 --pattern '*.whl' --dir $d && uv tool install --force $d/*.whl
+dima2                                          # http://localhost:8000
 ```
 
-Development: run uvicorn with `--reload` and `npm run dev` in `frontend/` (http://localhost:5173, proxies `/api`).
+Run the install line again to upgrade. `dima2 --help` lists the options (`--host`, `--port`). It
+listens on localhost only by default, since its terminals give shell access.
 
 State lives in `~/.dima2/dima2.db` (override with `DIMA2_DB`). Sessions are tmux sessions named `dima2-<id>`,
 so they survive restarts of the backend and the browser.
 
-## Docker
+## Develop
 
-The image bundles the built frontend, the backend, git, tmux and Claude Code.
-
-```sh
-echo "PROJECTS_DIR=$HOME/code" > .env              # the folder holding your repos (default ~/projects)
-docker compose up -d --build                       # http://localhost:8000
-docker compose exec dima2 claude                   # once, to log in to Claude Code
-```
-
-`PROJECTS_DIR` is mounted at the same path inside the container, because git worktrees record absolute paths to
-each other; `~/projects` in the container links to it, so the folder picker opens there. The database and Claude
-Code's login live in named volumes, so they survive rebuilds. tmux sessions live inside the container and end when
-it stops. The container runs as uid 1000; if your host user differs, build with
-`--build-arg UID=$(id -u) --build-arg GID=$(id -g)`. To use your git identity and SSH keys, uncomment the two
-mounts in `compose.yaml`.
-
-To move it to another machine without a registry:
+Needs Node 18+ as well.
 
 ```sh
-docker save dima2 | gzip > dima2.tar.gz      # here
-docker load < dima2.tar.gz                   # there, next to a copy of compose.yaml and a .env
-docker compose up -d
+cd frontend && npm install && npm run dev      # http://localhost:5173, proxies /api
+cd backend && uv run dima2 --reload
 ```
+
+A source checkout serves `frontend/dist` if it's built (`npm run build`), so `uv run dima2` alone works too.
+
+To release, bump `version` in `backend/pyproject.toml`, commit, and push a matching tag (`git tag v0.2.0 && git push
+--tags`). The Release workflow builds the frontend into the wheel and attaches it to a GitHub release.
 
 ## Agent status
 
@@ -63,7 +54,7 @@ cd frontend && npm run build   # type-checks
 
 ## Layout
 
-- `backend/app/git.py`, `tmux.py` — thin wrappers over the `git` and `tmux` CLIs
-- `backend/app/routes/` — projects, worktrees (diff, content), sessions (PTY websocket), comments (+ send), views
+- `backend/dima2/git.py`, `tmux.py` — thin wrappers over the `git` and `tmux` CLIs
+- `backend/dima2/routes/` — projects, worktrees (diff, content), sessions (PTY websocket), comments (+ send), views
 - `frontend/src/workspace/` — the worktree workspace (file tree, diff, markdown review, terminal)
 - `frontend/src/markdown/` — shared markdown renderer (sanitized HTML, mermaid, stable block ids)

@@ -31,6 +31,8 @@ class SPAFiles(StaticFiles):
             return await super().get_response("index.html", scope)
 
 
-DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
-if DIST.is_dir():
+# An installed wheel carries the frontend in dima2/static; a source checkout serves frontend/dist.
+PACKAGE_DIR = Path(__file__).resolve().parent
+DIST = next((d for d in (PACKAGE_DIR / "static", PACKAGE_DIR.parents[1] / "frontend" / "dist") if d.is_dir()), None)
+if DIST:
     app.mount("/", SPAFiles(directory=DIST, html=True))

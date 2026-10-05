@@ -5,8 +5,8 @@ import subprocess
 import pytest
 from fastapi.testclient import TestClient
 
-from app.hooks import COMMAND, EVENTS
-from app.main import app
+from dima2.hooks import COMMAND, EVENTS
+from dima2.main import app
 
 
 def sh(cwd, *args):
