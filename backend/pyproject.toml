@@ -1,6 +1,6 @@
 [project]
 name = "dima2"
-version = "0.3.1"
+version = "0.4.0"
 description = "A UI for git worktrees across your projects"
 requires-python = ">=3.12"
 license = "MIT"
