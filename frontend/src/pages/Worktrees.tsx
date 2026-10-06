@@ -73,7 +73,7 @@ export default function Worktrees() {
                   {w.unmanaged ? <>{w.branch}<span className="muted"> · not tracked</span></> : w.archived_at ? <>{w.branch}<span className="muted"> · archived</span></> : (
                     <Link className="branch" to={`/worktrees/${w.id}`}>
                       {w.main && <span className="main-mark" title="Main checkout: work directly in the project folder, not a worktree"><Home /></span>}
-                      {w.review && <span className="main-mark" title="Review: someone else's branch"><Eye /></span>}
+                      {w.review && <span className="main-mark review-mark" title="Review: someone else's branch"><Eye /></span>}
                       {w.branch}
                     </Link>
                   )}

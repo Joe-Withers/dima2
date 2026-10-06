@@ -4,6 +4,7 @@
   --text: #e7e4dd; --muted: #a0a4ab; --faint: #7c8188;
   --accent: #e8a33d; --accent-hover: #f0b354; --on-accent: #1a1205;
   --danger: #e89a8c;
+  --review: #b392f0;
   color-scheme: dark;
 }
 * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: #3a4048 transparent; }
@@ -66,6 +67,7 @@ a { color: #8dbbee; }
 .branch { color: var(--text); text-decoration: none; }
 .branch:hover { color: #8dbbee; text-decoration: underline; }
 .main-mark { display: inline-flex; vertical-align: -2px; margin-right: 6px; color: var(--accent); }
+.review-mark { color: var(--review); }
 .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px 2px 8px; border: 1px solid; border-radius: 999px; font-size: 12px; font-weight: 500; }
 .pill .d { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .s-running { color: #8dbbee; border-color: #2c4560; background: #16212d; }
