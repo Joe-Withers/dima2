@@ -5,7 +5,7 @@ import { api } from "../api";
 import { projectColor } from "../projectColor";
 import DiffView from "./DiffView";
 import FileTree from "./FileTree";
-import { Back } from "./icons";
+import { Back, Eye } from "./icons";
 import ReviewPane from "./ReviewPane";
 import SessionTabs from "./SessionTabs";
 import Terminal from "./Terminal";
@@ -86,6 +86,7 @@ export default function Workspace() {
           <span className="swatch" style={{ background: projectColor(w.project) }} />
           <span className="muted">{w.project}</span>
           <span className="faint">/</span>
+          {w.review && <span className="main-mark" title="Review: someone else's branch"><Eye /></span>}
           <span className="mono strong">{w.branch}</span>
         </span>
         {w.main ? <span className="muted small">main checkout · uncommitted changes</span> : <span className="mono muted small">↑{w.ahead} ↓{w.behind} vs {w.base_ref}</span>}

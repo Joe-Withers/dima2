@@ -6,7 +6,7 @@ import NewWorktreeDialog from "../NewWorktreeDialog";
 import Page from "../Page";
 import { projectColor } from "../projectColor";
 import { timeAgo } from "../timeAgo";
-import { Archive, Home } from "../workspace/icons";
+import { Archive, Eye, Home } from "../workspace/icons";
 import { useAttentionCount, useWorktrees } from "../useWorktrees";
 
 export default function Worktrees() {
@@ -73,6 +73,7 @@ export default function Worktrees() {
                   {w.unmanaged ? <>{w.branch}<span className="muted"> · not tracked</span></> : w.archived_at ? <>{w.branch}<span className="muted"> · archived</span></> : (
                     <Link className="branch" to={`/worktrees/${w.id}`}>
                       {w.main && <span className="main-mark" title="Main checkout: work directly in the project folder, not a worktree"><Home /></span>}
+                      {w.review && <span className="main-mark" title="Review: someone else's branch"><Eye /></span>}
                       {w.branch}
                     </Link>
                   )}

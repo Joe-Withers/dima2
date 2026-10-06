@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS worktrees (
     base_ref TEXT NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     archived_at INTEGER,
+    review INTEGER NOT NULL DEFAULT 0,  -- checked out to review someone else's branch
     UNIQUE (project_id, branch)  -- branch '' is the project's main checkout, whatever it has checked out
 
 );
@@ -62,6 +63,8 @@ def init() -> None:
         conn.executescript(SCHEMA)
         if "agent_state" not in {r["name"] for r in conn.execute("PRAGMA table_info(sessions)")}:
             conn.execute("ALTER TABLE sessions ADD COLUMN agent_state TEXT")  # databases created before hooks existed
+        if "review" not in {r["name"] for r in conn.execute("PRAGMA table_info(worktrees)")}:
+            conn.execute("ALTER TABLE worktrees ADD COLUMN review INTEGER NOT NULL DEFAULT 0")
 
 
 def get(conn: sqlite3.Connection, table: str, id: int) -> sqlite3.Row:

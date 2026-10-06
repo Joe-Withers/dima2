@@ -20,6 +20,8 @@ export type Worktree = {
   done: boolean;
   /** The project's own checkout rather than a worktree: `branch` is whatever it has checked out, changes are uncommitted ones. */
   main: boolean;
+  /** Checked out to review someone else's branch. */
+  review: boolean;
   /** Exists in git but has no dima2 record yet; `path` is set only for these. */
   unmanaged?: boolean;
   path?: string;
@@ -36,6 +38,7 @@ export type WorktreeDetail = {
   base_ref: string;
   archived_at: number | null;
   main: boolean;
+  review: boolean;
   ahead: number;
   behind: number;
   files: ChangedFile[];
@@ -62,7 +65,7 @@ export type Comment = {
 
 export type Directory = { path: string; parent: string | null; is_repo: boolean; dirs: { name: string; is_repo: boolean }[] };
 
-export type Refs = { default: string; refs: string[] };
+export type Refs = { default: string; refs: string[]; local: string[]; remote: string[] };
 
 export type ViewEntry = { group: string; name: string; path: string; scope: "project" | "global" };
 export type ViewFile = { path: string; scope: string; frontmatter: Record<string, string>; body: string };
@@ -87,12 +90,13 @@ export const api = {
   removeProject: (id: number) => request<void>("DELETE", `/api/projects/${id}`),
   directory: (path: string) => request<Directory>("GET", `/api/fs?${q({ path })}`),
   refs: (projectId: number) => request<Refs>("GET", `/api/projects/${projectId}/refs`),
+  fetch: (projectId: number) => request<void>("POST", `/api/projects/${projectId}/fetch`),
   views: (projectId: number) => request<ViewEntry[]>("GET", `/api/projects/${projectId}/views`),
   viewFile: (projectId: number, path: string, scope: string) => request<ViewFile>("GET", `/api/projects/${projectId}/views/file?${q({ path, scope })}`),
 
   worktrees: () => request<Worktree[]>("GET", "/api/worktrees"),
   worktree: (id: number) => request<WorktreeDetail>("GET", `/api/worktrees/${id}`),
-  addWorktree: (w: { project_id: number; branch: string; base_ref: string }) =>
+  addWorktree: (w: { project_id: number; branch: string; base_ref: string; existing: boolean; review: boolean }) =>
     request<{ id: number }>("POST", "/api/worktrees", w),
   adoptWorktree: (body: { project_id: number; branch: string; path: string }) => request<{ id: number }>("POST", "/api/worktrees/adopt", body),
   archiveWorktree: (id: number) => request<void>("POST", `/api/worktrees/${id}/archive`),

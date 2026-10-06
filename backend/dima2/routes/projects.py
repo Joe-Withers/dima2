@@ -43,4 +43,16 @@ def delete_project(id: int):
 def project_refs(id: int):
     with db.connect() as conn:
         root = db.get(conn, "projects", id)["root_path"]
-    return {"default": git.default_base(root), "refs": git.branches(root)}
+    local, remote = git.local_and_remote_branches(root)
+    return {"default": git.default_base(root), "refs": git.branches(root), "local": local, "remote": remote}
+
+
+@router.post("/projects/{id}/fetch", status_code=204)
+def fetch_project(id: int):
+    """Pick up branches pushed by others, e.g. to review a PR."""
+    with db.connect() as conn:
+        root = db.get(conn, "projects", id)["root_path"]
+    try:
+        git.fetch(root)
+    except git.GitError as e:
+        raise HTTPException(400, str(e))

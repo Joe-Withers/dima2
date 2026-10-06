@@ -56,6 +56,7 @@ tr.archived td { color: var(--faint); }
 .dialog { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 20px; padding: 20px 24px; background: var(--bg-raised); border: 1px solid #30343a; border-radius: 10px; box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5); }
 .dialog h2 { margin: 0; font-size: 18px; font-weight: 600; }
 .dialog label { display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; }
+.dialog label.check { flex-direction: row; font-weight: 400; }
 .help { color: var(--faint); font-size: 12px; font-weight: 400; }
 .cmd { padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-size: 12px; overflow-x: auto; white-space: nowrap; }
 .actions { display: flex; justify-content: flex-end; gap: 10px; }
@@ -92,7 +93,7 @@ a { color: #8dbbee; }
 .back:hover { color: var(--text); }
 .vr { width: 1px; height: 20px; background: #30343a; }
 .crumb { display: inline-flex; align-items: center; gap: 8px; }
-.crumb .swatch { margin: 0; }
+.crumb .swatch, .crumb .main-mark { margin: 0; }
 .regions { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .region { min-height: 40px; overflow: hidden; display: flex; }
 .region.top { display: grid; grid-template-columns: 280px 1fr; grid-template-rows: 40px 1fr; }

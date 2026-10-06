@@ -24,6 +24,24 @@ def branches(root: str) -> list[str]:
     return git(root, "for-each-ref", "--format=%(refname:short)", "refs/heads", "refs/remotes", "refs/tags").split()
 
 
+def local_and_remote_branches(root: str) -> tuple[list[str], list[str]]:
+    """Local branch names, and remote-tracking ones like origin/feat/x (the remote's HEAD alias left out)."""
+    local, remote = [], []
+    for line in git(root, "for-each-ref", "--format=%(refname) %(symref)", "refs/heads", "refs/remotes").splitlines():
+        ref, _, symref = line.partition(" ")
+        if symref:
+            continue
+        if ref.startswith("refs/heads/"):
+            local.append(ref.removeprefix("refs/heads/"))
+        else:
+            remote.append(ref.removeprefix("refs/remotes/"))
+    return local, remote
+
+
+def fetch(root: str) -> None:
+    git(root, "fetch", "--all", "--prune")
+
+
 def default_base(root: str) -> str:
     try:
         return git(root, "symbolic-ref", "--short", "refs/remotes/origin/HEAD")
@@ -36,14 +54,38 @@ def worktree_dir(branch: str) -> str:
 
 
 def add_worktree(root: str, branch: str, base_ref: str) -> str:
-    """Create .worktrees/<branch> from base_ref and return its path."""
+    """Create .worktrees/<branch> on a new branch from base_ref and return its path."""
     git(root, "check-ref-format", "--branch", branch)
-    path = Path(root) / ".worktrees" / worktree_dir(branch)
-    if path.exists():
-        raise GitError(f"{path} already exists")
+    path = new_worktree_path(root, branch)
     git(root, "worktree", "add", str(path), "-b", branch, base_ref)
     ignore_locally(root, ".worktrees/")
     return str(path)
+
+
+def checkout_worktree(root: str, ref: str) -> tuple[str, str]:
+    """Create .worktrees/<branch> on an existing branch and return (path, branch). A remote-tracking ref like
+    origin/feat/x checks out the local feat/x, creating it to track the remote when there isn't one yet."""
+    local, remote = local_and_remote_branches(root)
+    if ref in local:
+        branch = ref
+    elif ref in remote:
+        branch = ref.split("/", 1)[1]
+    else:
+        raise GitError(f"no branch named {ref}")
+    path = str(new_worktree_path(root, branch))
+    if branch in local:
+        git(root, "worktree", "add", path, branch)
+    else:
+        git(root, "worktree", "add", "--track", "-b", branch, path, ref)
+    ignore_locally(root, ".worktrees/")
+    return path, branch
+
+
+def new_worktree_path(root: str, branch: str) -> Path:
+    path = Path(root) / ".worktrees" / worktree_dir(branch)
+    if path.exists():
+        raise GitError(f"{path} already exists")
+    return path
 
 
 def ignore_locally(repo: str, pattern: str) -> None:

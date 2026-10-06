@@ -83,6 +83,27 @@ def test_duplicate_branch(client, repo):
     assert client.post("/api/worktrees", json=body).status_code == 400
 
 
+def test_existing_branches(client, repo, tmp_path):
+    """A local branch, and a colleague's branch that only exists on the remote until fetched, flagged for review."""
+    clone = tmp_path / "clone"
+    sh(tmp_path, "git", "clone", str(repo), str(clone))
+    sh(repo, "git", "branch", "theirs/pr")
+    sh(clone, "git", "branch", "mine")
+    p = client.post("/api/projects", json={"name": "clone", "root_path": str(clone)}).json()
+    assert "origin/theirs/pr" not in client.get(f"/api/projects/{p['id']}/refs").json()["remote"]
+    assert client.post(f"/api/projects/{p['id']}/fetch").status_code == 204
+    refs = client.get(f"/api/projects/{p['id']}/refs").json()
+    assert (refs["local"], refs["remote"]) == (["main", "mine"], ["origin/main", "origin/theirs/pr"])
+
+    body = {"project_id": p["id"], "base_ref": "origin/main", "existing": True}
+    assert client.post("/api/worktrees", json={**body, "branch": "mine"}).status_code == 201
+    assert client.post("/api/worktrees", json={**body, "branch": "origin/theirs/pr", "review": True}).status_code == 201
+    assert client.post("/api/worktrees", json={**body, "branch": "nope"}).status_code == 400
+    assert sorted((w["branch"], w["review"]) for w in worktrees(client)) == [("mine", False), ("theirs/pr", True)]
+    assert (clone / ".worktrees" / "theirs-pr").is_dir()
+    assert subprocess.run(["git", "rev-parse", "--abbrev-ref", "theirs/pr@{upstream}"], cwd=clone, capture_output=True, text=True).stdout.strip() == "origin/theirs/pr"
+
+
 @pytest.fixture
 def worktree(client, repo):
     p = client.post("/api/projects", json={"name": "repo", "root_path": str(repo)}).json()

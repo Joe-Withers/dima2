@@ -14,8 +14,10 @@ MAIN = ""  # branch of the row for a project's main checkout: worked in directly
 
 class WorktreeIn(BaseModel):
     project_id: int
-    branch: str
+    branch: str  # with existing, a local branch or a remote-tracking ref like origin/feat/x
     base_ref: str
+    existing: bool = False
+    review: bool = False
 
 
 def load(conn: sqlite3.Connection, id: int) -> sqlite3.Row:
@@ -67,6 +69,7 @@ def ensure_main_checkouts(conn: sqlite3.Connection) -> None:
 def describe(r: sqlite3.Row) -> dict:
     """Fields shared by the list and the detail view; a main checkout shows the branch it has checked out now."""
     item = {k: r[k] for k in ("id", "project_id", "project", "branch", "base_ref", "created_at", "archived_at")}
+    item["review"] = bool(r["review"])
     item["main"] = r["branch"] == MAIN
     if item["main"] and r["archived_at"] is None:
         item["branch"] = git.current_branch(r["path"])
@@ -130,7 +133,7 @@ def unmanaged(rows: list[sqlite3.Row]) -> list[dict]:
             found.append({
                 "id": 0, "project_id": p["id"], "project": p["name"], "branch": w["branch"], "path": w["path"],
                 "base_ref": "", "created_at": 0, "archived_at": None, "files": 0, "md_files": 0, "ahead": 0, "behind": 0,
-                "last_activity": 0, "sessions": 0, "status": "idle", "done": False, "unmanaged": True,
+                "last_activity": 0, "sessions": 0, "status": "idle", "done": False, "review": False, "unmanaged": True,
             })
     return found
 
@@ -163,22 +166,25 @@ def create_worktree(body: WorktreeIn):
     with db.connect() as conn:
         root = db.get(conn, "projects", body.project_id)["root_path"]
         try:
-            path = git.add_worktree(root, body.branch, body.base_ref)
+            if body.existing:
+                path, branch = git.checkout_worktree(root, body.branch)
+            else:
+                path, branch = git.add_worktree(root, body.branch, body.base_ref), body.branch
         except git.GitError as e:
             raise HTTPException(400, str(e))
         try:
             cur = conn.execute(
-                "INSERT INTO worktrees (project_id, branch, path, base_ref) VALUES (?, ?, ?, ?)",
-                (body.project_id, body.branch, path, body.base_ref),
+                "INSERT INTO worktrees (project_id, branch, path, base_ref, review) VALUES (?, ?, ?, ?, ?)",
+                (body.project_id, branch, path, body.base_ref, body.review),
             )
             return {"id": cur.lastrowid}
         except sqlite3.IntegrityError:
             # branch was archived earlier: git has removed the folder, so revive the row
             conn.execute(
-                "UPDATE worktrees SET path = ?, base_ref = ?, archived_at = NULL WHERE project_id = ? AND branch = ?",
-                (path, body.base_ref, body.project_id, body.branch),
+                "UPDATE worktrees SET path = ?, base_ref = ?, review = ?, archived_at = NULL WHERE project_id = ? AND branch = ?",
+                (path, body.base_ref, body.review, body.project_id, branch),
             )
-            row = conn.execute("SELECT id FROM worktrees WHERE project_id = ? AND branch = ?", (body.project_id, body.branch)).fetchone()
+            row = conn.execute("SELECT id FROM worktrees WHERE project_id = ? AND branch = ?", (body.project_id, branch)).fetchone()
             return {"id": row["id"]}
 
 

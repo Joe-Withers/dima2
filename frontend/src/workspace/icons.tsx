@@ -16,3 +16,4 @@ export const Trash = svg("M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3", 1
 export const Home = svg("M4 11l8-6.5 8 6.5M6 9.5V19h12V9.5", 14);
 export const Archive = svg("M3 5h18v4H3zM5 9v10h14V9M10 13h4", 18);
 export const Pencil = svg("M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4", 14);
+export const Eye = svg("M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", 14);
