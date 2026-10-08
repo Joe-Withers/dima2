@@ -119,7 +119,9 @@ def test_detail_diff_and_content(client, worktree):
     assert detail["files"] == [{"path": "a.txt", "status": "M"}, {"path": "new.md", "status": "A"}]
     assert "+changed" in client.get(f"/api/worktrees/{id}/diff", params={"path": "a.txt"}).json()["diff"]
     assert "+# new" in client.get(f"/api/worktrees/{id}/diff", params={"path": "new.md"}).json()["diff"]
-    assert client.get(f"/api/worktrees/{id}/content", params={"path": "new.md"}).text == "# new\nline"
+    content = client.get(f"/api/worktrees/{id}/content", params={"path": "new.md"})
+    assert content.text == "# new\nline"
+    assert content.headers["cache-control"] == "no-cache"
     assert client.get(f"/api/worktrees/{id}/content", params={"path": "../../a.txt"}).status_code == 400
 
 

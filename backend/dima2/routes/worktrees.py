@@ -247,4 +247,5 @@ def get_content(id: int, path: str):
     full = file_in_worktree(w, path)
     if not full.is_file():
         raise HTTPException(404, f"{path} not found")
-    return FileResponse(full)
+    # Files change under agents: without this, browsers cache by Last-Modified and keep showing stale content.
+    return FileResponse(full, headers={"Cache-Control": "no-cache"})
