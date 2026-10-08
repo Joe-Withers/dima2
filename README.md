@@ -11,7 +11,7 @@ Design reference: `docs/initial_plan/` (brainstorm + UI mockups).
 Needs [uv](https://docs.astral.sh/uv/), git, tmux and curl (Linux or macOS; on Windows, use WSL).
 
 ```sh
-uv tool install --force https://github.com/Joe-Withers/dima2/releases/download/v0.4.2/dima2-0.4.2-py3-none-any.whl
+uv tool install --force https://github.com/Joe-Withers/dima2/releases/download/v0.4.3/dima2-0.4.3-py3-none-any.whl
 dima2                                          # http://localhost:8000
 ```
 
