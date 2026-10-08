@@ -102,7 +102,8 @@ export const api = {
   archiveWorktree: (id: number) => request<void>("POST", `/api/worktrees/${id}/archive`),
   files: (id: number) => request<string[]>("GET", `/api/worktrees/${id}/files`),
   diff: (id: number, path: string) => request<{ diff: string }>("GET", `/api/worktrees/${id}/diff?${q({ path })}`),
-  content: (id: number, path: string) => fetch(contentUrl(id, path)).then((r) => r.text()),
+  // Always revalidate: browsers that cached a file before the server sent Cache-Control would otherwise keep serving it.
+  content: (id: number, path: string) => fetch(contentUrl(id, path), { cache: "no-cache" }).then((r) => r.text()),
 
   sessions: (worktreeId: number) => request<Session[]>("GET", `/api/worktrees/${worktreeId}/sessions`),
   addSession: (worktreeId: number) => request<{ id: number }>("POST", `/api/worktrees/${worktreeId}/sessions`),
