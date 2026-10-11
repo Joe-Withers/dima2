@@ -153,10 +153,20 @@ def last_activity(path: str) -> int:
 
 
 def upstream(path: str, branch: str) -> str | None:
+    """The branch's upstream, or origin/<branch> when it was pushed without setting one."""
     try:
         return git(path, "rev-parse", "--abbrev-ref", f"{branch}@{{upstream}}")
     except GitError:
-        return None
+        pushed = subprocess.run(["git", "rev-parse", "--verify", "--quiet", f"refs/remotes/origin/{branch}"], cwd=path, capture_output=True)
+        return f"origin/{branch}" if pushed.returncode == 0 else None
+
+
+def pull_note(path: str, branch: str, up: str, pulled: int) -> str:
+    """e.g. "main: pulled 2 commits from origin/main", or "main: nothing to pull (3 ahead of origin/main)"."""
+    if pulled:
+        return f"{branch}: pulled {pulled} commit{'s' * (pulled != 1)} from {up}"
+    ahead = int(git(path, "rev-list", "--count", f"{up}..{branch}"))
+    return f"{branch}: nothing to pull ({ahead} ahead of {up})" if ahead else f"{branch}: up to date with {up}"
 
 
 def fast_forward(path: str, target: str) -> int:
@@ -176,10 +186,9 @@ def sync(path: str, base_ref: str) -> list[str]:
     if branch == "HEAD":
         notes.append("detached HEAD: fetched only")
     elif up := upstream(path, branch):
-        n = fast_forward(path, up)
-        notes.append(f"{branch}: pulled {n} commit{'s' * (n != 1)} from {up}" if n else f"{branch}: up to date with {up}")
+        notes.append(pull_note(path, branch, up, fast_forward(path, up)))
     else:
-        notes.append(f"{branch}: no upstream yet, fetched only")
+        notes.append(f"{branch}: not on the remote yet, nothing to pull")
 
     local, _ = local_and_remote_branches(path)
     if base_ref == branch or base_ref not in local or not (up := upstream(path, base_ref)):
@@ -192,7 +201,7 @@ def sync(path: str, base_ref: str) -> list[str]:
             before = git(path, "rev-parse", base_ref)
             git(path, "fetch", ".", f"refs/remotes/{up}:refs/heads/{base_ref}")  # fast-forward only, no checkout
             n = int(git(path, "rev-list", "--count", f"{before}..{base_ref}"))
-        notes.append(f"{base_ref}: pulled {n} commit{'s' * (n != 1)} from {up}" if n else f"{base_ref}: up to date with {up}")
+        notes.append(pull_note(path, base_ref, up, n))
     except GitError as e:
         notes.append(f"{base_ref}: not updated ({e.args[0].splitlines()[-1]})")
     return notes

@@ -130,6 +130,14 @@ def test_sync_pulls_branch_and_local_base(client, repo, tmp_path):
     (clone / ".worktrees" / "feat" / "local.txt").write_text("x")
     sh(clone / ".worktrees" / "feat", "git", "add", ".")
     sh(clone / ".worktrees" / "feat", "git", "commit", "-m", "local")
+    assert client.post(f"/api/worktrees/{id}/sync").json()["notes"][0] == "feat: nothing to pull (1 ahead of origin/feat)"
+
+    sh(clone, "git", "branch", "--unset-upstream", "feat")  # pushed without -u: origin/feat still counts
+    assert client.post(f"/api/worktrees/{id}/sync").json()["notes"][0] == "feat: nothing to pull (1 ahead of origin/feat)"
+    sh(clone, "git", "branch", "-m", "feat", "unpushed")
+    assert client.post(f"/api/worktrees/{id}/sync").json()["notes"][0] == "unpushed: not on the remote yet, nothing to pull"
+    sh(clone, "git", "branch", "-m", "unpushed", "feat")
+
     (repo / "theirs.txt").write_text("y")
     sh(repo, "git", "checkout", "feat")
     sh(repo, "git", "add", ".")
