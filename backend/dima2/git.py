@@ -100,13 +100,7 @@ def ignore_locally(repo: str, pattern: str) -> None:
 
 def list_worktrees(root: str) -> list[dict[str, str]]:
     """Linked worktrees on a branch (the main checkout, bare and detached entries are skipped)."""
-    out = git(root, "worktree", "list", "--porcelain")
-    entries = [dict(line.split(" ", 1) for line in block.splitlines() if " " in line) for block in out.split("\n\n")]
-    return [
-        {"path": e["worktree"], "branch": e["branch"].removeprefix("refs/heads/")}
-        for e in entries[1:]
-        if "branch" in e
-    ]
+    return [{"path": e["worktree"], "branch": e["branch"].removeprefix("refs/heads/")} for e in worktree_entries(root)[1:] if "branch" in e]
 
 
 def remove_worktree(root: str, path: str) -> None:
@@ -156,3 +150,55 @@ def ahead_behind(path: str, base_ref: str) -> tuple[int, int]:
 def last_activity(path: str) -> int:
     """Unix time of the latest commit on the worktree's branch."""
     return int(git(path, "log", "-1", "--format=%ct"))
+
+
+def upstream(path: str, branch: str) -> str | None:
+    try:
+        return git(path, "rev-parse", "--abbrev-ref", f"{branch}@{{upstream}}")
+    except GitError:
+        return None
+
+
+def fast_forward(path: str, target: str) -> int:
+    """Fast-forward the checkout at path to target; returns how many commits it moved."""
+    before = git(path, "rev-parse", "HEAD")
+    git(path, "merge", "--ff-only", target)
+    return int(git(path, "rev-list", "--count", f"{before}..HEAD"))
+
+
+def sync(path: str, base_ref: str) -> list[str]:
+    """Fetch, fast-forward the checked-out branch to its upstream, and do the same for base_ref when it is a local
+    branch with an upstream (a remote-tracking base like origin/main is brought up to date by the fetch itself).
+    Returns a line per step; raises when the checked-out branch can't be fast-forwarded."""
+    git(path, "fetch", "--all", "--prune")
+    notes = []
+    branch = current_branch(path)
+    if branch == "HEAD":
+        notes.append("detached HEAD: fetched only")
+    elif up := upstream(path, branch):
+        n = fast_forward(path, up)
+        notes.append(f"{branch}: pulled {n} commit{'s' * (n != 1)} from {up}" if n else f"{branch}: up to date with {up}")
+    else:
+        notes.append(f"{branch}: no upstream yet, fetched only")
+
+    local, _ = local_and_remote_branches(path)
+    if base_ref == branch or base_ref not in local or not (up := upstream(path, base_ref)):
+        return notes
+    checked_out = next((e["worktree"] for e in worktree_entries(path) if e.get("branch") == f"refs/heads/{base_ref}"), None)
+    try:
+        if checked_out:
+            n = fast_forward(checked_out, up)
+        else:
+            before = git(path, "rev-parse", base_ref)
+            git(path, "fetch", ".", f"refs/remotes/{up}:refs/heads/{base_ref}")  # fast-forward only, no checkout
+            n = int(git(path, "rev-list", "--count", f"{before}..{base_ref}"))
+        notes.append(f"{base_ref}: pulled {n} commit{'s' * (n != 1)} from {up}" if n else f"{base_ref}: up to date with {up}")
+    except GitError as e:
+        notes.append(f"{base_ref}: not updated ({e.args[0].splitlines()[-1]})")
+    return notes
+
+
+def worktree_entries(path: str) -> list[dict[str, str]]:
+    """`git worktree list --porcelain` as dicts, the main checkout first."""
+    out = git(path, "worktree", "list", "--porcelain")
+    return [dict(line.split(" ", 1) for line in block.splitlines() if " " in line) for block in out.split("\n\n")]

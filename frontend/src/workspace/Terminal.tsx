@@ -13,6 +13,7 @@ const clipboard: IClipboardProvider = {
 };
 
 const MIN_HEIGHT = 80; // don't resize the pty while the region is collapsed to its tab bar
+const SESSION_GONE = 4404; // close code from the backend when the tmux session no longer exists
 
 export default function Terminal({ sessionId }: { sessionId: number }) {
   const container = useRef<HTMLDivElement>(null);
@@ -48,11 +49,10 @@ export default function Terminal({ sessionId }: { sessionId: number }) {
     // Ctrl+Up/Down belong to the app's layout shortcuts, not the pty.
     term.attachCustomKeyEventHandler((e) => !(e.ctrlKey && (e.key === "ArrowUp" || e.key === "ArrowDown")));
 
-    const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/sessions/${sessionId}/ws`);
-    ws.binaryType = "arraybuffer";
     // Resize only once the size settles and actually changed: resizing on every frame of a drag, mid-stream,
     // leaves tmux redrawing for sizes the terminal has already left, which garbles the screen.
     let sent = "";
+    let ws: WebSocket;
     const sendSize = () => {
       if (el.clientHeight < MIN_HEIGHT || ws.readyState !== WebSocket.OPEN) return;
       const size = fit.proposeDimensions();
@@ -64,9 +64,40 @@ export default function Terminal({ sessionId }: { sessionId: number }) {
     };
     let timer: number | undefined;
     const sendSizeSoon = () => (window.clearTimeout(timer), (timer = window.setTimeout(sendSize, 120)));
-    ws.onopen = () => (sendSize(), term.focus());
-    ws.onmessage = (e) => term.write(new Uint8Array(e.data));
-    ws.onclose = () => term.write("\r\n\x1b[90m[disconnected]\x1b[0m\r\n");
+
+    // The tmux session outlives the socket, so a dropped connection (laptop sleep, network blip, backend restart)
+    // just reattaches. Retries back off, and coming back to the tab or regaining the network retries at once.
+    let retry: number | undefined;
+    let delay = 500;
+    let attachedBefore = false;
+    let attached = false;
+    const connect = () => {
+      window.clearTimeout(retry);
+      retry = undefined;
+      ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/sessions/${sessionId}/ws`);
+      ws.binaryType = "arraybuffer";
+      ws.onopen = () => {
+        if (attachedBefore) term.reset(); // tmux redraws the whole screen on attach; drop the stale one first
+        attachedBefore = attached = true;
+        delay = 500;
+        sent = "";
+        sendSize();
+        term.focus();
+      };
+      ws.onmessage = (e) => term.write(new Uint8Array(e.data));
+      ws.onclose = (e) => {
+        if (disposed) return;
+        if (e.code === SESSION_GONE) return term.write("\r\n\x1b[90m[session ended]\x1b[0m\r\n");
+        if (attached) term.write("\r\n\x1b[90m[disconnected, reconnecting…]\x1b[0m\r\n");
+        attached = false;
+        retry = window.setTimeout(connect, delay);
+        delay = Math.min(delay * 2, 10000);
+      };
+    };
+    const reconnectNow = () => retry !== undefined && document.visibilityState === "visible" && connect();
+    document.addEventListener("visibilitychange", reconnectNow);
+    window.addEventListener("online", reconnectNow);
+    connect();
     term.onData((data) => ws.readyState === WebSocket.OPEN && ws.send(new TextEncoder().encode(data)));
 
     const observer = new ResizeObserver(sendSizeSoon);
@@ -74,6 +105,9 @@ export default function Terminal({ sessionId }: { sessionId: number }) {
     return () => {
       disposed = true;
       window.clearTimeout(timer);
+      window.clearTimeout(retry);
+      document.removeEventListener("visibilitychange", reconnectNow);
+      window.removeEventListener("online", reconnectNow);
       observer.disconnect();
       ws.close();
       term.dispose();

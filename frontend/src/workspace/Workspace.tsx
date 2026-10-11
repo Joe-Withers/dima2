@@ -5,7 +5,7 @@ import { api } from "../api";
 import { projectColor } from "../projectColor";
 import DiffView from "./DiffView";
 import FileTree from "./FileTree";
-import { Back, Eye } from "./icons";
+import { Back, Eye, Sync } from "./icons";
 import ReviewPane from "./ReviewPane";
 import SessionTabs from "./SessionTabs";
 import Terminal from "./Terminal";
@@ -40,6 +40,18 @@ export default function Workspace() {
     onSuccess: (s) => (setChosenSession(s.id), refreshSessions()),
   });
   const closeSession = useMutation({ mutationFn: api.closeSession, onSuccess: refreshSessions });
+  const [syncNote, setSyncNote] = useState<string | null>(null);
+  const sync = useMutation({
+    mutationFn: () => api.syncWorktree(id),
+    onSuccess: ({ notes }) => {
+      setSyncNote(notes.join(" · "));
+      window.setTimeout(() => setSyncNote(null), 6000);
+      qc.invalidateQueries({ queryKey: ["worktree", id] });
+      qc.invalidateQueries({ queryKey: ["files", id] });
+      qc.invalidateQueries({ queryKey: ["worktrees"] });
+    },
+    onError: (e) => alert(`Sync failed: ${e.message}`),
+  });
   const archive = useMutation({
     mutationFn: () => api.archiveWorktree(id),
     onSuccess: () => navigate("/worktrees"),
@@ -92,6 +104,15 @@ export default function Workspace() {
         {w.main ? <span className="muted small">main checkout · uncommitted changes</span> : <span className="mono muted small">↑{w.ahead} ↓{w.behind} vs {w.base_ref}</span>}
         <span className="mono muted small">{w.files.length} files{mdCount > 0 && <span className="accent"> · {mdCount} md</span>}</span>
         <span className="grow" />
+        {syncNote && <span className="muted small sync-note" title={syncNote}>{syncNote}</span>}
+        <button
+          className="btn sync-btn"
+          disabled={sync.isPending}
+          title={w.main ? "Fetch and fast-forward the checked-out branch" : `Fetch, fast-forward ${w.branch}, and update ${w.base_ref}`}
+          onClick={() => sync.mutate()}
+        >
+          <Sync />{sync.isPending ? "Syncing…" : "Sync"}
+        </button>
         {!w.main && <button className="btn" onClick={() => confirm(`Archive ${w.branch}? This removes its folder.`) && archive.mutate()}>Archive</button>}
       </div>
 

@@ -249,3 +249,14 @@ def get_content(id: int, path: str):
         raise HTTPException(404, f"{path} not found")
     # Files change under agents: without this, browsers cache by Last-Modified and keep showing stale content.
     return FileResponse(full, headers={"Cache-Control": "no-cache"})
+
+
+@router.post("/worktrees/{id}/sync")
+def sync_worktree(id: int):
+    """git pull for the worktree's branch (fast-forward only), plus its base branch when that is a local one."""
+    with db.connect() as conn:
+        w = active(load(conn, id))
+    try:
+        return {"notes": git.sync(w["path"], w["base_ref"])}
+    except git.GitError as e:
+        raise HTTPException(400, str(e))

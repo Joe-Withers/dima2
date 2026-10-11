@@ -100,6 +100,7 @@ export const api = {
     request<{ id: number }>("POST", "/api/worktrees", w),
   adoptWorktree: (body: { project_id: number; branch: string; path: string }) => request<{ id: number }>("POST", "/api/worktrees/adopt", body),
   archiveWorktree: (id: number) => request<void>("POST", `/api/worktrees/${id}/archive`),
+  syncWorktree: (id: number) => request<{ notes: string[] }>("POST", `/api/worktrees/${id}/sync`),
   files: (id: number) => request<string[]>("GET", `/api/worktrees/${id}/files`),
   diff: (id: number, path: string) => request<{ diff: string }>("GET", `/api/worktrees/${id}/diff?${q({ path })}`),
   // Always revalidate: browsers that cached a file before the server sent Cache-Control would otherwise keep serving it.

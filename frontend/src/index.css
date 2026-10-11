@@ -91,6 +91,10 @@ a { color: #8dbbee; }
 /* workspace */
 .workspace { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .ws-head { min-height: 52px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 6px 12px 6px 16px; border-bottom: 1px solid var(--border); }
+.sync-btn { gap: 8px; }
+.sync-btn:disabled svg { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(-360deg); } }
+.sync-note { max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .back { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: 13px; }
 .back:hover { color: var(--text); }
 .vr { width: 1px; height: 20px; background: #30343a; }

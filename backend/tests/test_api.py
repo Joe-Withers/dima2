@@ -104,6 +104,38 @@ def test_existing_branches(client, repo, tmp_path):
     assert subprocess.run(["git", "rev-parse", "--abbrev-ref", "theirs/pr@{upstream}"], cwd=clone, capture_output=True, text=True).stdout.strip() == "origin/theirs/pr"
 
 
+
+def test_sync_pulls_branch_and_local_base(client, repo, tmp_path):
+    sh(repo, "git", "branch", "feat")
+    clone = tmp_path / "clone"
+    sh(tmp_path, "git", "clone", str(repo), str(clone))
+    p = client.post("/api/projects", json={"name": "clone", "root_path": str(clone)}).json()
+    body = {"project_id": p["id"], "branch": "origin/feat", "base_ref": "main", "existing": True}
+    id = client.post("/api/worktrees", json=body).json()["id"]
+
+    for branch in ("feat", "main"):  # new commits upstream on both the branch and its base
+        sh(repo, "git", "checkout", branch)
+        (repo / f"{branch}.txt").write_text(branch)
+        sh(repo, "git", "add", ".")
+        sh(repo, "git", "commit", "-m", branch)
+    r = client.post(f"/api/worktrees/{id}/sync")
+    assert r.status_code == 200
+    assert r.json()["notes"] == ["feat: pulled 1 commit from origin/feat", "main: pulled 1 commit from origin/main"]
+    assert (clone / ".worktrees" / "feat" / "feat.txt").exists()
+    assert (clone / "main.txt").exists()  # main is checked out in the main checkout, so it moved there
+    assert client.post(f"/api/worktrees/{id}/sync").json()["notes"] == ["feat: up to date with origin/feat", "main: up to date with origin/main"]
+
+    sh(clone, "git", "config", "user.email", "t@t")
+    sh(clone, "git", "config", "user.name", "t")
+    (clone / ".worktrees" / "feat" / "local.txt").write_text("x")
+    sh(clone / ".worktrees" / "feat", "git", "add", ".")
+    sh(clone / ".worktrees" / "feat", "git", "commit", "-m", "local")
+    (repo / "theirs.txt").write_text("y")
+    sh(repo, "git", "checkout", "feat")
+    sh(repo, "git", "add", ".")
+    sh(repo, "git", "commit", "-m", "theirs")
+    assert client.post(f"/api/worktrees/{id}/sync").status_code == 400  # diverged: never merges or rebases
+
 @pytest.fixture
 def worktree(client, repo):
     p = client.post("/api/projects", json={"name": "repo", "root_path": str(repo)}).json()
@@ -214,6 +246,15 @@ def test_terminal_resize_reaches_tmux(client, worktree):
             while window_size() != f"{size[0]}x{size[1]}" and time.monotonic() < deadline:
                 time.sleep(0.05)
             assert window_size() == f"{size[0]}x{size[1]}"
+
+
+def test_terminal_for_missing_session_says_so(client):
+    from starlette.websockets import WebSocketDisconnect
+
+    with client.websocket_connect("/api/sessions/999/ws") as ws:
+        with pytest.raises(WebSocketDisconnect) as e:
+            ws.receive_bytes()
+    assert e.value.code == 4404
 
 
 def test_unsent_comment_delete(client, worktree):

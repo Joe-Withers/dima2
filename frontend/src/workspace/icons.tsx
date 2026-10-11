@@ -17,3 +17,5 @@ export const Home = svg("M4 11l8-6.5 8 6.5M6 9.5V19h12V9.5", 14);
 export const Archive = svg("M3 5h18v4H3zM5 9v10h14V9M10 13h4", 18);
 export const Pencil = svg("M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4", 14);
 export const Eye = svg("M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", 14);
+export const Copy = svg("M9 9h11v11H9zM5 15H4V4h11v1", 14);
+export const Sync = svg("M20 11a8 8 0 0 0-14.5-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.5L20 16M20 20v-4h-4", 16);

@@ -78,6 +78,9 @@ def close_session(id: int):
         conn.execute("DELETE FROM sessions WHERE id = ?", (id,))
 
 
+SESSION_GONE = 4404
+
+
 def resize(fd: int, cols: int, rows: int) -> None:
     fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", rows, cols, 0, 0))
 
@@ -89,7 +92,9 @@ async def attach(ws: WebSocket, id: int):
     try:
         tmux.configure(id)
     except RuntimeError:
-        pass  # session is gone; attach below reports it
+        # The session is gone: a distinct close code tells the browser not to keep reconnecting.
+        await ws.close(code=SESSION_GONE)
+        return
     master, slave = pty.openpty()
     proc = await asyncio.create_subprocess_exec(
         "tmux", "-u", "attach", "-t", tmux.name(id),
