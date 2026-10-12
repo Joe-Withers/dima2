@@ -83,6 +83,18 @@ def test_force_archive_discards_uncommitted_files(client, worktree, repo):
     assert "feat/x" in subprocess.run(["git", "branch"], cwd=repo, capture_output=True, text=True).stdout  # the branch stays
 
 
+def test_app_page_is_revalidated(client):
+    """After an upgrade the browser must pick up the new index.html, and with it the new scripts."""
+    from dima2.main import DIST
+
+    if not DIST:
+        pytest.skip("frontend not built")
+    for path in ("/", "/worktrees/1"):
+        assert client.get(path).headers["cache-control"] == "no-cache"
+    asset = next((DIST / "assets").iterdir()).name
+    assert "immutable" in client.get(f"/assets/{asset}").headers["cache-control"]
+
+
 def test_rejects_non_repo(client, tmp_path):
     r = client.post("/api/projects", json={"name": "x", "root_path": str(tmp_path)})
     assert r.status_code == 400

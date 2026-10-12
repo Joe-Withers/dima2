@@ -24,11 +24,18 @@ class SPAFiles(StaticFiles):
 
     async def get_response(self, path, scope):
         try:
-            return await super().get_response(path, scope)
+            response = await super().get_response(path, scope)
         except HTTPException as e:
             if e.status_code != 404:
                 raise
-            return await super().get_response("index.html", scope)
+            response = await super().get_response("index.html", scope)
+        # Built assets have content hashes in their names, so they can be kept forever. Everything else (index.html
+        # above all) must be revalidated, or after an upgrade the browser keeps loading the old app's scripts.
+        if path.startswith("assets/"):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        else:
+            response.headers["Cache-Control"] = "no-cache"
+        return response
 
 
 # An installed wheel carries the frontend in dima2/static; a source checkout serves frontend/dist.
