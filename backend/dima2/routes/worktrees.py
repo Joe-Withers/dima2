@@ -204,13 +204,16 @@ def get_worktree(id: int):
 
 
 @router.post("/worktrees/{id}/archive", status_code=204)
-def archive_worktree(id: int):
+def archive_worktree(id: int, force: bool = False):
+    """force discards uncommitted and untracked files; committed work stays on the branch either way."""
     with db.connect() as conn:
         w = active(load(conn, id))
         if w["branch"] == MAIN:
             raise HTTPException(400, "the main checkout can't be archived")
+        if not force and git.is_dirty(w["path"]):
+            raise HTTPException(409, f"{w['branch']} has uncommitted or untracked files")
         try:
-            git.remove_worktree(w["root_path"], w["path"])
+            git.remove_worktree(w["root_path"], w["path"], force)
         except git.GitError as e:
             raise HTTPException(400, str(e))
         mark_archived(conn, id)

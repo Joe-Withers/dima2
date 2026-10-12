@@ -7,17 +7,14 @@ import Page from "../Page";
 import { projectColor } from "../projectColor";
 import { timeAgo } from "../timeAgo";
 import { Archive, Eye, Home } from "../workspace/icons";
+import { useArchive } from "../useArchive";
 import { useAttentionCount, useWorktrees } from "../useWorktrees";
 
 export default function Worktrees() {
   const qc = useQueryClient();
   const worktrees = useWorktrees();
   const attention = useAttentionCount();
-  const archive = useMutation({
-    mutationFn: api.archiveWorktree,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["worktrees"] }),
-    onError: (e) => alert(e.message),
-  });
+  const archive = useArchive(() => qc.invalidateQueries({ queryKey: ["worktrees"] }));
   const adopt = useMutation({
     mutationFn: api.adoptWorktree,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["worktrees"] }),
@@ -98,7 +95,7 @@ export default function Worktrees() {
                     <button className="iconbtn plus" aria-label={`Track ${w.branch}`} title="Track in dima2" onClick={() => adopt.mutate({ project_id: w.project_id, branch: w.branch, path: w.path! })}>+</button>
                   )}
                   {!w.archived_at && !w.unmanaged && !w.main && (
-                    <button className="iconbtn" aria-label={`Archive ${w.branch}`} title="Archive" onClick={() => confirm(`Archive ${w.branch}? This removes its folder.`) && archive.mutate(w.id)}>
+                    <button className="iconbtn" aria-label={`Archive ${w.branch}`} title="Archive" onClick={() => archive(w.id, w.branch)}>
                       <Archive />
                     </button>
                   )}

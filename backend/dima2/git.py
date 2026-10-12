@@ -103,8 +103,13 @@ def list_worktrees(root: str) -> list[dict[str, str]]:
     return [{"path": e["worktree"], "branch": e["branch"].removeprefix("refs/heads/")} for e in worktree_entries(root)[1:] if "branch" in e]
 
 
-def remove_worktree(root: str, path: str) -> None:
-    git(root, "worktree", "remove", path)
+def remove_worktree(root: str, path: str, force: bool = False) -> None:
+    git(root, "worktree", "remove", *(["--force"] if force else []), path)
+
+
+def is_dirty(path: str) -> bool:
+    """Uncommitted changes or untracked (not ignored) files: what `git worktree remove` refuses to throw away."""
+    return bool(git(path, "status", "--porcelain"))
 
 
 def changed_files(path: str, base_ref: str) -> dict[str, str]:

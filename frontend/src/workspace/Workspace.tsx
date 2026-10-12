@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import { projectColor } from "../projectColor";
+import { useArchive } from "../useArchive";
 import DiffView from "./DiffView";
 import FileTree from "./FileTree";
 import { Back, Eye, Sync } from "./icons";
@@ -52,11 +53,7 @@ export default function Workspace() {
     },
     onError: (e) => alert(`Sync failed: ${e.message}`),
   });
-  const archive = useMutation({
-    mutationFn: () => api.archiveWorktree(id),
-    onSuccess: () => navigate("/worktrees"),
-    onError: (e) => alert(e.message),
-  });
+  const archive = useArchive(() => navigate("/worktrees"));
 
   // Looking at a worktree acknowledges "done" for its sessions.
   const hasDone = sessions.data?.some((s) => s.agent_state === "done");
@@ -113,7 +110,7 @@ export default function Workspace() {
         >
           <Sync />{sync.isPending ? "Syncing…" : "Sync"}
         </button>
-        {!w.main && <button className="btn" onClick={() => confirm(`Archive ${w.branch}? This removes its folder.`) && archive.mutate()}>Archive</button>}
+        {!w.main && <button className="btn" onClick={() => archive(id, w.branch)}>Archive</button>}
       </div>
 
       <div className="regions" ref={region}>

@@ -70,13 +70,20 @@ export type Refs = { default: string; refs: string[]; local: string[]; remote: s
 export type ViewEntry = { group: string; name: string; path: string; scope: "project" | "global" };
 export type ViewFile = { path: string; scope: string; frontmatter: Record<string, string>; body: string };
 
+/** A failed request; status lets callers react to specific refusals, like 409 for a worktree with uncommitted files. */
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+  }
+}
+
 async function request<T>(method: string, url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
     method,
     headers: body ? { "Content-Type": "application/json" } : undefined,
     body: body ? JSON.stringify(body) : undefined,
   });
-  if (!res.ok) throw new Error((await res.json().catch(() => null))?.detail ?? res.statusText);
+  if (!res.ok) throw new ApiError((await res.json().catch(() => null))?.detail ?? res.statusText, res.status);
   return res.status === 204 || res.headers.get("content-length") === "0" ? (undefined as T) : res.json();
 }
 
@@ -99,7 +106,7 @@ export const api = {
   addWorktree: (w: { project_id: number; branch: string; base_ref: string; existing: boolean; review: boolean }) =>
     request<{ id: number }>("POST", "/api/worktrees", w),
   adoptWorktree: (body: { project_id: number; branch: string; path: string }) => request<{ id: number }>("POST", "/api/worktrees/adopt", body),
-  archiveWorktree: (id: number) => request<void>("POST", `/api/worktrees/${id}/archive`),
+  archiveWorktree: (id: number, force = false) => request<void>("POST", `/api/worktrees/${id}/archive${force ? "?force=true" : ""}`),
   syncWorktree: (id: number) => request<{ notes: string[] }>("POST", `/api/worktrees/${id}/sync`),
   files: (id: number) => request<string[]>("GET", `/api/worktrees/${id}/files`),
   diff: (id: number, path: string) => request<{ diff: string }>("GET", `/api/worktrees/${id}/diff?${q({ path })}`),

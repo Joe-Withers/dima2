@@ -62,13 +62,25 @@ def test_worktree_lifecycle(client, repo):
     # the worktree dir is excluded from the main checkout's status
     assert subprocess.run(["git", "status", "--porcelain"], cwd=repo, capture_output=True, text=True).stdout == ""
 
-    assert client.post(f"/api/worktrees/{row['id']}/archive").status_code == 400  # dirty
+    assert client.post(f"/api/worktrees/{row['id']}/archive").status_code == 409  # dirty
     sh(wt, "git", "add", ".")
     sh(wt, "git", "commit", "-m", "work")
     assert client.post(f"/api/worktrees/{row['id']}/archive").status_code == 204
     assert not wt.exists()
     [row] = worktrees(client)
     assert row["archived_at"] is not None
+
+
+def test_force_archive_discards_uncommitted_files(client, worktree, repo):
+    id, wt = worktree
+    (wt / "a.txt").write_text("edited")
+    (wt / "scratch.txt").write_text("untracked")
+    assert client.post(f"/api/worktrees/{id}/archive").status_code == 409
+    assert wt.exists()
+    assert client.post(f"/api/worktrees/{id}/archive", params={"force": True}).status_code == 204
+    assert not wt.exists()
+    assert worktrees(client)[0]["archived_at"] is not None
+    assert "feat/x" in subprocess.run(["git", "branch"], cwd=repo, capture_output=True, text=True).stdout  # the branch stays
 
 
 def test_rejects_non_repo(client, tmp_path):
