@@ -53,6 +53,20 @@ export default function Workspace() {
     },
     onError: (e) => alert(`Sync failed: ${e.message}`),
   });
+  const refs = useQuery({
+    queryKey: ["refs", worktree.data?.project_id],
+    queryFn: () => api.refs(worktree.data!.project_id),
+    enabled: worktree.data !== undefined && !worktree.data.main,
+  });
+  const setBase = useMutation({
+    mutationFn: (base: string) => api.setBase(id, base),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["worktree", id] });
+      qc.invalidateQueries({ queryKey: ["diff", id] });
+      qc.invalidateQueries({ queryKey: ["worktrees"] });
+    },
+    onError: (e) => alert(`Couldn't change base: ${e.message}`),
+  });
   const archive = useArchive(() => navigate("/worktrees"));
 
   // Looking at a worktree acknowledges "done" for its sessions.
@@ -98,7 +112,20 @@ export default function Workspace() {
           {w.review && <span className="main-mark review-mark" title="Review: someone else's branch"><Eye /></span>}
           <span className="mono strong">{w.branch}</span>
         </span>
-        {w.main ? <span className="muted small">main checkout · uncommitted changes</span> : <span className="mono muted small">↑{w.ahead} ↓{w.behind} vs {w.base_ref}</span>}
+        {w.main ? <span className="muted small">main checkout · uncommitted changes</span> : (
+          <span className="mono muted small base-pick">
+            ↑{w.ahead} ↓{w.behind} vs
+            <select
+              className="mono"
+              value={w.base_ref}
+              disabled={setBase.isPending}
+              title="Branch that changes and ↑↓ counts are shown against"
+              onChange={(e) => setBase.mutate(e.target.value)}
+            >
+              {(refs.data?.refs.includes(w.base_ref) ? refs.data.refs : [w.base_ref, ...(refs.data?.refs ?? [])]).map((r) => <option key={r}>{r}</option>)}
+            </select>
+          </span>
+        )}
         <span className="mono muted small">{w.files.length} files{mdCount > 0 && <span className="accent"> · {mdCount} md</span>}</span>
         <span className="grow" />
         {syncNote && <span className="muted small sync-note" title={syncNote}>{syncNote}</span>}

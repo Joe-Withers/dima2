@@ -189,6 +189,32 @@ def test_detail_diff_and_content(client, worktree):
     assert client.get(f"/api/worktrees/{id}/content", params={"path": "../../a.txt"}).status_code == 400
 
 
+def test_change_base(client, repo):
+    project = client.post("/api/projects", json={"name": "repo", "root_path": str(repo)}).json()
+    parent = client.post("/api/worktrees", json={"project_id": project["id"], "branch": "parent", "base_ref": "main"}).json()
+    pwt = repo / ".worktrees" / "parent"
+    (pwt / "p.txt").write_text("p")
+    sh(pwt, "git", "add", ".")
+    sh(pwt, "git", "commit", "-m", "parent work")
+    child = client.post("/api/worktrees", json={"project_id": project["id"], "branch": "child", "base_ref": "parent"}).json()
+    cwt = repo / ".worktrees" / "child"
+    (cwt / "c.txt").write_text("c")
+    sh(cwt, "git", "add", ".")
+    sh(cwt, "git", "commit", "-m", "child work")
+    # parent is squash-merged into main and child rebased onto it: against parent, p.txt now looks like child's change
+    sh(repo, "git", "merge", "--squash", "parent")
+    sh(repo, "git", "commit", "-m", "parent (squashed)")
+    sh(cwt, "git", "rebase", "--onto", "main", "parent")
+    assert [f["path"] for f in client.get(f"/api/worktrees/{child['id']}").json()["files"]] == ["c.txt", "p.txt"]
+
+    assert client.patch(f"/api/worktrees/{child['id']}", json={"base_ref": "nope"}).status_code == 400
+    assert client.patch(f"/api/worktrees/{child['id']}", json={"base_ref": "main"}).status_code == 204
+    detail = client.get(f"/api/worktrees/{child['id']}").json()
+    assert (detail["base_ref"], detail["files"], detail["ahead"]) == ("main", [{"path": "c.txt", "status": "A"}], 1)
+    main = next(w for w in client.get("/api/worktrees").json() if w["main"])
+    assert client.patch(f"/api/worktrees/{main['id']}", json={"base_ref": "main"}).status_code == 400
+
+
 def test_worktree_removed_outside_dima2(client, worktree, repo):
     id, wt = worktree
     sh(repo, "git", "worktree", "remove", str(wt))

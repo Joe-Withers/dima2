@@ -106,6 +106,7 @@ export const api = {
   addWorktree: (w: { project_id: number; branch: string; base_ref: string; existing: boolean; review: boolean }) =>
     request<{ id: number }>("POST", "/api/worktrees", w),
   adoptWorktree: (body: { project_id: number; branch: string; path: string }) => request<{ id: number }>("POST", "/api/worktrees/adopt", body),
+  setBase: (id: number, base_ref: string) => request<void>("PATCH", `/api/worktrees/${id}`, { base_ref }),
   archiveWorktree: (id: number, force = false) => request<void>("POST", `/api/worktrees/${id}/archive${force ? "?force=true" : ""}`),
   syncWorktree: (id: number) => request<{ notes: string[] }>("POST", `/api/worktrees/${id}/sync`),
   files: (id: number) => request<string[]>("GET", `/api/worktrees/${id}/files`),

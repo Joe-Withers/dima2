@@ -203,6 +203,24 @@ def get_worktree(id: int):
     return detail
 
 
+class WorktreePatch(BaseModel):
+    base_ref: str
+
+
+@router.patch("/worktrees/{id}", status_code=204)
+def update_worktree(id: int, body: WorktreePatch):
+    """Retarget what changes are shown against, e.g. after rebasing onto main once the parent branch merged."""
+    with db.connect() as conn:
+        w = active(load(conn, id))
+        if w["branch"] == MAIN:
+            raise HTTPException(400, "the main checkout has no base branch")
+        try:
+            git.git(w["path"], "rev-parse", "--verify", "--quiet", f"{body.base_ref}^{{commit}}")
+        except git.GitError:
+            raise HTTPException(400, f"{body.base_ref} is not a branch or commit")
+        conn.execute("UPDATE worktrees SET base_ref = ? WHERE id = ?", (body.base_ref, id))
+
+
 @router.post("/worktrees/{id}/archive", status_code=204)
 def archive_worktree(id: int, force: bool = False):
     """force discards uncommitted and untracked files; committed work stays on the branch either way."""
